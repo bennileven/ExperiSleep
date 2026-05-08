@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyAaNvuDSAWtHSqA8tiKhypHu6yRxh_9rXg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>427235248613</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>de.thkoeln.ExperiSleep</string>
+	<key>PROJECT_ID</key>
+	<string>experisleep</string>
+	<key>STORAGE_BUCKET</key>
+	<string>experisleep.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:427235248613:ios:811b43f1bef81e7d6e470c</string>
+</dict>
+</plist>
