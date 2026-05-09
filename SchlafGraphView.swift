@@ -88,30 +88,29 @@ struct SchlafGraphView: View {
                             let x = 30 + CGFloat(index) * balkenBreite
                             let balkenHoehe = maxHoehe * CGFloat(eintrag.schlafqualitaet) / 10
                             let y = maxHoehe - balkenHoehe
-                            let istBesserAlsBaseline = Double(eintrag.schlafqualitaet) >= baselineWert
+                            let istBesser = Double(eintrag.schlafqualitaet) >= baselineWert
                             
-                            // Balken
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     eintrag.istBaseline ?
                                     Color.gray.opacity(0.5) :
-                                    (istBesserAlsBaseline ? cyan : Color.red.opacity(0.6))
+                                    (istBesser ? cyan : Color.red.opacity(0.6))
                                 )
                                 .frame(width: max(balkenBreite - 4, 8), height: balkenHoehe)
                                 .position(x: x + balkenBreite / 2, y: y + balkenHoehe / 2)
                             
-                            // Wert oben
                             Text("\(eintrag.schlafqualitaet)")
                                 .font(.system(size: 8))
                                 .foregroundColor(.white.opacity(0.7))
                                 .position(x: x + balkenBreite / 2, y: y - 8)
                             
-                            // Datum unten
-                            Text(kurzesDatum(datum: eintrag.datum))
-                                .font(.system(size: 8))
-                                .foregroundColor(.white.opacity(0.4))
-                                .position(x: x + balkenBreite / 2, y: maxHoehe + 16)
-                                .rotationEffect(.degrees(-45), anchor: .center)
+                            // Nur jeden zweiten Tag anzeigen
+                            if index % 2 == 0 {
+                                Text(kurzesDatum(datum: eintrag.datum))
+                                    .font(.system(size: 8))
+                                    .foregroundColor(.white.opacity(0.4))
+                                    .position(x: x + balkenBreite / 2, y: maxHoehe + 16)
+                            }
                         }
                         
                         // Trendlinie

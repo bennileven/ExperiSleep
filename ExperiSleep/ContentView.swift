@@ -8,6 +8,7 @@ struct ContentView: View {
     
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
+    @AppStorage("demoModus") var demoModus = false
     
     var aktivesExperiment: String {
         aktiveExperimente.aktiveNamen.first ?? "Allgemein"
@@ -35,8 +36,9 @@ struct ContentView: View {
     }
     
     var durchschnittSchlafLetzte7Tage: Double {
+        let eintraege = demoModus ? demoDaten() : speicher.eintraege
         let vor7Tagen = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
-        let relevant = speicher.eintraege.filter { $0.datum >= vor7Tagen }
+        let relevant = eintraege.filter { $0.datum >= vor7Tagen }
         guard !relevant.isEmpty else { return 0 }
         return Double(relevant.reduce(0) { $0 + $1.schlafqualitaet }) / Double(relevant.count)
     }
@@ -53,6 +55,32 @@ struct ContentView: View {
         if diff > 0.5 { return .green }
         if diff < -0.5 { return .red }
         return .orange
+    }
+    
+    var graphEintraege: [CheckInEintrag] {
+        if demoModus {
+            return demoDaten()
+        }
+        return Array(speicher.eintraege.sorted { $0.datum < $1.datum }.suffix(14))
+    }
+    
+    func demoDaten() -> [CheckInEintrag] {
+        let schlafWerte = [5, 4, 6, 5, 4, 5, 7, 8, 7, 8, 9, 8, 9, 8]
+        let energieWerte = [5, 5, 5, 6, 4, 5, 6, 7, 7, 8, 7, 8, 8, 7]
+        let stressWerte = [6, 7, 5, 6, 7, 6, 4, 3, 4, 3, 3, 2, 3, 3]
+        guard let basisDatum = Calendar.current.date(byAdding: .day, value: -13, to: Date()) else { return [] }
+        
+        return (0..<14).compactMap { index in
+            guard let datum = Calendar.current.date(byAdding: .day, value: index, to: basisDatum) else { return nil }
+            return CheckInEintrag(
+                datum: datum.addingTimeInterval(8 * 3600),
+                schlafqualitaet: schlafWerte[index],
+                energie: energieWerte[index],
+                stress: stressWerte[index],
+                experimentTitel: aktivesExperiment,
+                istBaseline: false
+            )
+        }
     }
     
     var body: some View {
@@ -174,6 +202,17 @@ struct ContentView: View {
                                 Text("Mein Schlaf")
                                     .font(.headline)
                                     .foregroundColor(.white.opacity(0.7))
+                                
+                                if demoModus {
+                                    Text("Demo")
+                                        .font(.caption)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 2)
+                                        .background(Color.purple.opacity(0.3))
+                                        .foregroundColor(.purple)
+                                        .cornerRadius(8)
+                                }
+                                
                                 Spacer()
                                 if !aktiveExperimente.aktive.isEmpty {
                                     NavigationLink(destination: AuswertungView(
@@ -187,7 +226,6 @@ struct ContentView: View {
                             }
                             .padding(.horizontal)
                             
-                            // Statistik Karten
                             HStack(spacing: 12) {
                                 DashboardKarte(
                                     titel: "Ausgangswert",
@@ -205,7 +243,7 @@ struct ContentView: View {
                                 )
                                 DashboardKarte(
                                     titel: "Check-ins",
-                                    wert: "\(speicher.eintraege.count)",
+                                    wert: "\(demoModus ? 14 : speicher.eintraege.count)",
                                     einheit: "gesamt",
                                     icon: "checkmark.circle.fill",
                                     farbe: .indigo
@@ -213,10 +251,9 @@ struct ContentView: View {
                             }
                             .padding(.horizontal)
                             
-                            // Graph
-                            if !speicher.eintraege.isEmpty {
+                            if demoModus || !speicher.eintraege.isEmpty {
                                 SchlafGraphView(
-                                    eintraege: Array(speicher.eintraege.sorted { $0.datum < $1.datum }.suffix(14)),
+                                    eintraege: graphEintraege,
                                     baselineWert: baselineSchlaf
                                 )
                             } else {
@@ -407,3 +444,4 @@ struct DunklesExperimentButton: View {
         .environmentObject(AktiveExperimente())
         .environmentObject(CheckInSpeicher())
 }
+
