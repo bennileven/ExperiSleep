@@ -1,32 +1,27 @@
-//
-//  ExperiSleepApp.swift
-//  ExperiSleep
-//
-//  Created by benni leven on 07.05.26.
-//
-
 import SwiftUI
-import SwiftData
+import FirebaseCore
 
 @main
 struct ExperiSleepApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+    @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
+    @StateObject private var aktiveExperimente = AktiveExperimente()
+    @StateObject private var speicher = CheckInSpeicher()
+    
+    init() {
+        FirebaseApp.configure()
+    }
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if onboardingAbgeschlossen {
+                ContentView()
+                    .environmentObject(aktiveExperimente)
+                    .environmentObject(speicher)
+            } else {
+                OnboardingView()
+                    .environmentObject(aktiveExperimente)
+                    .environmentObject(speicher)
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }

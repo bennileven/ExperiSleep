@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>ExperiSleep speichert deine Ergebnisse</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>ExperiSleep liest deine Schlafdaten</string>
+	<key>CFBundleIdentifier</key>
+	<string>ExperiSleep liest deine Schlafdaten</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string></string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>NSHealthShareUsageDescription</key>
+			<string>ExperiSleep liest deine Schlafdaten</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>NSHealthUpdateUsageDescription</key>
+			<string>ExperiSleep speichert deine Ergebnisse</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>NSHealthShareUsageDescription</key>
+			<string>ExperiSleep liest deine Schlafdaten</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>NSHealthUpdateUsageDescription</key>
+			<string>ExperiSleep speichert deine Ergebnisse</string>
+		</dict>
+	</array>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSFileProviderDomainUsageDescription</key>
+			<string></string>
+			<key>NSMenuItem</key>
+			<dict/>
+		</dict>
+	</array>
+</dict>
+</plist>

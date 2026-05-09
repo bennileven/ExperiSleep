@@ -6,6 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A983FA892FAE03EE00D4D0CD /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A983FA882FAE03EE00D4D0CD /* FirebaseAuth */; };
+		A983FA8B2FAE03EF00D4D0CD /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = A983FA8A2FAE03EF00D4D0CD /* FirebaseFirestore */; };
+		A983FA8D2FAE043700D4D0CD /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A983FA8C2FAE043700D4D0CD /* GoogleService-Info.plist */; };
+		A983FA972FAE101500D4D0CD /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A983FA962FAE100400D4D0CD /* HealthKitManager.swift */; };
+		A983FAC02FAE1B0500D4D0CD /* SchlafGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A983FABF2FAE1AFE00D4D0CD /* SchlafGraphView.swift */; };
+		A983FAEB2FAF33C900D4D0CD /* ExperimenteListeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A983FAEA2FAF33B700D4D0CD /* ExperimenteListeView.swift */; };
+		A983FAED2FAF33FC00D4D0CD /* KategorieDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A983FAEC2FAF33E700D4D0CD /* KategorieDetailView.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		A9D820862FAD0F7200F9FBE9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +34,32 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		A983FA8C2FAE043700D4D0CD /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		A983FA962FAE100400D4D0CD /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
+		A983FABF2FAE1AFE00D4D0CD /* SchlafGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchlafGraphView.swift; sourceTree = "<group>"; };
+		A983FAEA2FAF33B700D4D0CD /* ExperimenteListeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExperimenteListeView.swift; sourceTree = "<group>"; };
+		A983FAEC2FAF33E700D4D0CD /* KategorieDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KategorieDetailView.swift; sourceTree = "<group>"; };
 		A9D820762FAD0F7100F9FBE9 /* ExperiSleep.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExperiSleep.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9D820852FAD0F7200F9FBE9 /* ExperiSleepTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExperiSleepTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9D8208F2FAD0F7200F9FBE9 /* ExperiSleepUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExperiSleepUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A983FA932FAE0D4D00D4D0CD /* Exceptions for "ExperiSleep" folder in "ExperiSleep" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A9D820752FAD0F7100F9FBE9 /* ExperiSleep */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A9D820782FAD0F7100F9FBE9 /* ExperiSleep */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A983FA932FAE0D4D00D4D0CD /* Exceptions for "ExperiSleep" folder in "ExperiSleep" target */,
+			);
 			path = ExperiSleep;
 			sourceTree = "<group>";
 		};
@@ -52,6 +80,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A983FA892FAE03EE00D4D0CD /* FirebaseAuth in Frameworks */,
+				A983FA8B2FAE03EF00D4D0CD /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +105,11 @@
 		A9D8206D2FAD0F7000F9FBE9 = {
 			isa = PBXGroup;
 			children = (
+				A983FAEC2FAF33E700D4D0CD /* KategorieDetailView.swift */,
+				A983FAEA2FAF33B700D4D0CD /* ExperimenteListeView.swift */,
+				A983FABF2FAE1AFE00D4D0CD /* SchlafGraphView.swift */,
+				A983FA962FAE100400D4D0CD /* HealthKitManager.swift */,
+				A983FA8C2FAE043700D4D0CD /* GoogleService-Info.plist */,
 				A9D820782FAD0F7100F9FBE9 /* ExperiSleep */,
 				A9D820882FAD0F7200F9FBE9 /* ExperiSleepTests */,
 				A9D820922FAD0F7200F9FBE9 /* ExperiSleepUITests */,
@@ -112,6 +147,8 @@
 			);
 			name = ExperiSleep;
 			packageProductDependencies = (
+				A983FA882FAE03EE00D4D0CD /* FirebaseAuth */,
+				A983FA8A2FAE03EF00D4D0CD /* FirebaseFirestore */,
 			);
 			productName = ExperiSleep;
 			productReference = A9D820762FAD0F7100F9FBE9 /* ExperiSleep.app */;
@@ -195,6 +232,9 @@
 			);
 			mainGroup = A9D8206D2FAD0F7000F9FBE9;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A983FA872FAE03EE00D4D0CD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A9D820772FAD0F7100F9FBE9 /* Products */;
 			projectDirPath = "";
@@ -212,6 +252,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A983FA8D2FAE043700D4D0CD /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -236,6 +277,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A983FAC02FAE1B0500D4D0CD /* SchlafGraphView.swift in Sources */,
+				A983FA972FAE101500D4D0CD /* HealthKitManager.swift in Sources */,
+				A983FAEB2FAF33C900D4D0CD /* ExperimenteListeView.swift in Sources */,
+				A983FAED2FAF33FC00D4D0CD /* KategorieDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -388,12 +433,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExperiSleep/ExperiSleep.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XQ65FQ89B4;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExperiSleep/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -430,12 +478,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ExperiSleep/ExperiSleep.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XQ65FQ89B4;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ExperiSleep/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -605,6 +656,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A983FA872FAE03EE00D4D0CD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A983FA882FAE03EE00D4D0CD /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A983FA872FAE03EE00D4D0CD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		A983FA8A2FAE03EF00D4D0CD /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A983FA872FAE03EE00D4D0CD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A9D8206E2FAD0F7100F9FBE9 /* Project object */;
 }
