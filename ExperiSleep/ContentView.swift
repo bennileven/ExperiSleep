@@ -58,9 +58,7 @@ struct ContentView: View {
     }
     
     var graphEintraege: [CheckInEintrag] {
-        if demoModus {
-            return demoDaten()
-        }
+        if demoModus { return demoDaten() }
         return Array(speicher.eintraege.sorted { $0.datum < $1.datum }.suffix(14))
     }
     
@@ -69,7 +67,6 @@ struct ContentView: View {
         let energieWerte = [5, 5, 5, 6, 4, 5, 6, 7, 7, 8, 7, 8, 8, 7]
         let stressWerte = [6, 7, 5, 6, 7, 6, 4, 3, 4, 3, 3, 2, 3, 3]
         guard let basisDatum = Calendar.current.date(byAdding: .day, value: -13, to: Date()) else { return [] }
-        
         return (0..<14).compactMap { index in
             guard let datum = Calendar.current.date(byAdding: .day, value: index, to: basisDatum) else { return nil }
             return CheckInEintrag(
@@ -110,12 +107,20 @@ struct ContentView: View {
                                 }
                             }
                             Spacer()
-                            Image("logo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 60, height: 60)
-                                .cornerRadius(14)
-                        }
+                            NavigationLink(destination: ProfilView()
+                                .environmentObject(speicher)
+                                .environmentObject(aktiveExperimente)
+                            ) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.08))
+                                        .frame(width: 44, height: 44)
+                                    Image(systemName: "person.fill")
+                                        .foregroundColor(cyan)
+                                        .font(.system(size: 20))
+                                }
+                            }
+                        } // ← HStack Ende
                         .padding(.horizontal)
                         .padding(.top, 50)
                         
@@ -299,7 +304,6 @@ struct ContentView: View {
                                             Image(systemName: "moon.stars.fill")
                                                 .foregroundColor(.indigo)
                                                 .frame(width: 30)
-                                            
                                             VStack(alignment: .leading, spacing: 2) {
                                                 Text(titel)
                                                     .font(.body)
@@ -311,7 +315,6 @@ struct ContentView: View {
                                                         .foregroundColor(.green.opacity(0.8))
                                                 }
                                             }
-                                            
                                             Spacer()
                                             Circle()
                                                 .fill(Color.green)
@@ -444,4 +447,3 @@ struct DunklesExperimentButton: View {
         .environmentObject(AktiveExperimente())
         .environmentObject(CheckInSpeicher())
 }
-

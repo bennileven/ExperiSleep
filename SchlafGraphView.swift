@@ -26,20 +26,20 @@ struct SchlafGraphView: View {
             } else {
                 
                 // Legende
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     HStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.gray.opacity(0.5))
+                            .fill(cyan)
                             .frame(width: 12, height: 12)
-                        Text("Woche 1")
+                        Text("Besser als Ausgangswert")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.6))
                     }
                     HStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(cyan)
+                            .fill(Color.red.opacity(0.6))
                             .frame(width: 12, height: 12)
-                        Text("Woche 2")
+                        Text("Schlechter")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.6))
                     }
@@ -91,11 +91,7 @@ struct SchlafGraphView: View {
                             let istBesser = Double(eintrag.schlafqualitaet) >= baselineWert
                             
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(
-                                    eintrag.istBaseline ?
-                                    Color.gray.opacity(0.5) :
-                                    (istBesser ? cyan : Color.red.opacity(0.6))
-                                )
+                                .fill(istBesser ? cyan : Color.red.opacity(0.6))
                                 .frame(width: max(balkenBreite - 4, 8), height: balkenHoehe)
                                 .position(x: x + balkenBreite / 2, y: y + balkenHoehe / 2)
                             
@@ -104,7 +100,6 @@ struct SchlafGraphView: View {
                                 .foregroundColor(.white.opacity(0.7))
                                 .position(x: x + balkenBreite / 2, y: y - 8)
                             
-                            // Nur jeden zweiten Tag anzeigen
                             if index % 2 == 0 {
                                 Text(kurzesDatum(datum: eintrag.datum))
                                     .font(.system(size: 8))
@@ -134,20 +129,17 @@ struct SchlafGraphView: View {
                 
                 // Zusammenfassung
                 let besserAlsBaseline = sortiertEintraege.filter {
-                    !$0.istBaseline && Double($0.schlafqualitaet) >= baselineWert
+                    Double($0.schlafqualitaet) >= baselineWert
                 }.count
-                let experimentEintraege = sortiertEintraege.filter { !$0.istBaseline }.count
                 
-                if experimentEintraege > 0 {
-                    HStack(spacing: 8) {
-                        Image(systemName: besserAlsBaseline > experimentEintraege / 2 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
-                            .foregroundColor(besserAlsBaseline > experimentEintraege / 2 ? .green : .red)
-                        Text("\(besserAlsBaseline) von \(experimentEintraege) Nächten besser als dein Ausgangswert")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    .padding(.top, 4)
+                HStack(spacing: 8) {
+                    Image(systemName: besserAlsBaseline > sortiertEintraege.count / 2 ? "arrow.up.circle.fill" : "arrow.down.circle.fill")
+                        .foregroundColor(besserAlsBaseline > sortiertEintraege.count / 2 ? .green : .red)
+                    Text("\(besserAlsBaseline) von \(sortiertEintraege.count) Nächten besser als dein Ausgangswert")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
                 }
+                .padding(.top, 4)
             }
         }
         .padding()

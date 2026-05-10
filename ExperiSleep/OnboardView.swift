@@ -16,12 +16,26 @@ struct OnboardingView: View {
             
             VStack(spacing: 30) {
                 
-                // Fortschritt
-                HStack(spacing: 8) {
-                    ForEach(0..<4) { i in
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(i <= schritt ? cyan : Color.white.opacity(0.2))
-                            .frame(height: 4)
+                // Zurück + Fortschritt
+                HStack(spacing: 12) {
+                    Button(action: {
+                        withAnimation { schritt -= 1 }
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.white)
+                            .padding(8)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(Circle())
+                    }
+                    .opacity(schritt > 0 ? 1 : 0)
+                    .disabled(schritt == 0)
+
+                    HStack(spacing: 8) {
+                        ForEach(0..<4) { i in
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(i <= schritt ? cyan : Color.white.opacity(0.2))
+                                .frame(height: 4)
+                        }
                     }
                 }
                 .padding(.horizontal)
