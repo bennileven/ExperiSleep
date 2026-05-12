@@ -32,51 +32,105 @@ class HealthKitManager: ObservableObject {
     // Schlafdaten für eine bestimmte Nacht laden
     func schlafdatenFuerNacht(datum: Date, completion: @escaping (Double, Int) -> Void) {
         let schlafTyp = HKObjectType.categoryType(forIdentifier: .sleepAnalysis)!
-        
+
         let nachtEnde = Calendar.current.startOfDay(for: datum).addingTimeInterval(12 * 3600)
         let nachtStart = nachtEnde.addingTimeInterval(-14 * 3600)
-        
+
         let predikat = HKQuery.predicateForSamples(
             withStart: nachtStart,
             end: nachtEnde,
             options: .strictStartDate
         )
-        
+
         let query = HKSampleQuery(
             sampleType: schlafTyp,
             predicate: predikat,
             limit: HKObjectQueryNoLimit,
             sortDescriptors: nil
         ) { _, ergebnisse, _ in
-            guard let samples = ergebnisse as? [HKCategorySample] else {
+            guard let samples = ergebnisse as? [HKCategorySample], !samples.isEmpty else {
                 completion(0, 5)
                 return
             }
-            
-            let tiefSchlaf = samples.filter {
-                $0.value == HKCategoryValueSleepAnalysis.asleepDeep.rawValue ||
-                $0.value == HKCategoryValueSleepAnalysis.asleepREM.rawValue ||
-                $0.value == HKCategoryValueSleepAnalysis.asleepCore.rawValue
+
+            func sekunden(_ phasen: [HKCategorySample]) -> Double {
+                phasen.reduce(0) { $0 + $1.endDate.timeIntervalSince($1.startDate) }
             }
-            
-            let gesamtSekunden = tiefSchlaf.reduce(0) { $0 + $1.endDate.timeIntervalSince($1.startDate) }
-            let stunden = gesamtSekunden / 3600
-            
-            let qualitaet: Int
-            switch stunden {
-            case 0..<4: qualitaet = 2
-            case 4..<5: qualitaet = 4
-            case 5..<6: qualitaet = 5
-            case 6..<7: qualitaet = 6
-            case 7..<8: qualitaet = 8
-            default: qualitaet = 9
+
+            let tiefSek  = sekunden(samples.filter { $0.value == HKCategoryValueSleepAnalysis.asleepDeep.rawValue })
+            let remSek   = sekunden(samples.filter { $0.value == HKCategoryValueSleepAnalysis.asleepREM.rawValue })
+            let kernSek  = sekunden(samples.filter { $0.value == HKCategoryValueSleepAnalysis.asleepCore.rawValue })
+            let wachSek  = sekunden(samples.filter { $0.value == HKCategoryValueSleepAnalysis.awake.rawValue })
+            let asleepSek = sekunden(samples.filter { $0.value == HKCategoryValueSleepAnalysis.asleep.rawValue })
+
+            // Ältere Geräte ohne Phasendaten nutzen nur .asleep
+            let hatPhasendaten = (tiefSek + remSek + kernSek) > 0
+            let schlafSek = hatPhasendaten ? (tiefSek + remSek + kernSek) : asleepSek
+            let stunden = schlafSek / 3600
+
+            guard stunden > 0 else {
+                completion(0, 1)
+                return
             }
-            
+
+            // Dauer-Basispunkte (1–6)
+            let dauerScore: Int
+            if stunden < 4      { dauerScore = 1 }
+            else if stunden < 5 { dauerScore = 2 }
+            else if stunden < 6 { dauerScore = 3 }
+            else if stunden < 7 { dauerScore = 4 }
+            else if stunden < 9 { dauerScore = 6 }
+            else                { dauerScore = 5 }
+
+            var score: Int
+
+            if hatPhasendaten {
+                let tiefAnteil = tiefSek / schlafSek
+                let remAnteil  = remSek  / schlafSek
+                let wachAnteil = (schlafSek + wachSek) > 0 ? wachSek / (schlafSek + wachSek) : 0
+
+                // Tiefschlaf-Bonus/Abzug (-1 bis +2)
+                let tiefBonus: Int
+                if tiefAnteil >= 0.20 && tiefAnteil <= 0.30 {
+                    tiefBonus = 2
+                } else if (tiefAnteil >= 0.16 && tiefAnteil < 0.20) || (tiefAnteil > 0.30 && tiefAnteil <= 0.33) {
+                    tiefBonus = 1
+                } else if tiefAnteil < 0.10 {
+                    tiefBonus = -1
+                } else {
+                    tiefBonus = 0
+                }
+
+                // REM-Bonus/Abzug (-1 bis +2)
+                let remBonus: Int
+                if remAnteil >= 0.21 && remAnteil <= 0.31 {
+                    remBonus = 2
+                } else if (remAnteil >= 0.15 && remAnteil < 0.21) || (remAnteil > 0.31 && remAnteil <= 0.35) {
+                    remBonus = 1
+                } else if remAnteil < 0.10 {
+                    remBonus = -1
+                } else {
+                    remBonus = 0
+                }
+
+                // Wachphasen-Abzug (0 oder -1)
+                let wachAbzug = wachAnteil > 0.15 ? -1 : 0
+
+                score = dauerScore + tiefBonus + remBonus + wachAbzug
+            } else {
+                score = dauerScore
+            }
+
+            // Unter 4 Stunden → maximal 4/10
+            if stunden < 4 { score = min(score, 4) }
+
+            let qualitaet = max(1, min(10, score))
+
             DispatchQueue.main.async {
                 completion(stunden, qualitaet)
             }
         }
-        
+
         healthStore.execute(query)
     }
     

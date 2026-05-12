@@ -13,9 +13,10 @@ struct OnboardingView: View {
         ZStack {
             Color(red: 0.05, green: 0.11, blue: 0.24)
                 .ignoresSafeArea()
-            
+
+            GlassEffectContainer {
             VStack(spacing: 30) {
-                
+
                 // Zurück + Fortschritt
                 HStack(spacing: 12) {
                     Button(action: {
@@ -24,8 +25,7 @@ struct OnboardingView: View {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.white)
                             .padding(8)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
+                            .glassEffect(in: Circle())
                     }
                     .opacity(schritt > 0 ? 1 : 0)
                     .disabled(schritt == 0)
@@ -99,6 +99,7 @@ struct OnboardingView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 30)
             }
+            } // GlassEffectContainer
         }
     }
 }
@@ -133,8 +134,7 @@ struct WillkommensSchritt: View {
                 OnboardingInfoRow(icon: "chart.bar.fill", text: "Sieh nach 2 Wochen ob es geholfen hat", color: cyan)
             }
             .padding()
-            .background(Color.white.opacity(0.06))
-            .cornerRadius(14)
+            .glassEffect(in: RoundedRectangle(cornerRadius: 14))
             .padding(.horizontal)
         }
     }
@@ -176,7 +176,7 @@ struct FrageSchritt: View {
                 Slider(value: $wert, in: 1...10, step: 1)
                     .tint(color)
                     .padding(.horizontal)
-                
+
                 HStack {
                     Text(linksLabel)
                         .font(.caption)
@@ -189,8 +189,7 @@ struct FrageSchritt: View {
                 .padding(.horizontal)
             }
             .padding()
-            .background(Color.white.opacity(0.06))
-            .cornerRadius(14)
+            .glassEffect(in: RoundedRectangle(cornerRadius: 14))
             .padding(.horizontal)
         }
     }

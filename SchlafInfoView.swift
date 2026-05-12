@@ -42,28 +42,45 @@ struct SchlafInfoView: View {
                         farbe: cyan,
                         titel: "Wie wird dein Schlafwert berechnet?",
                         inhalt: """
-                        ExperiSleep liest deine Schlafdaten direkt aus Apple Health. Dabei werden nur die echten Schlafphasen gezählt — also Tiefschlaf, REM-Schlaf und Kernschlaf. Wachphasen oder Ruhephasen werden nicht berücksichtigt.
+                        ExperiSleep liest deine Schlafdaten direkt aus Apple Health und berechnet den Qualitätswert (1–10) aus zwei Faktoren: Schlafdauer und Schlafphasen-Anteilen — genau wie Apple Health es auswertet.
 
-                        Aus der gesamten Schlafdauer wird dann ein Qualitätswert von 1–10 berechnet:
+                        Erst wird ein Basispunkt-Wert aus der Schlafdauer ermittelt. Danach fließen die Anteile von Tiefschlaf, REM-Schlaf und Wachphasen als Bonus oder Abzug ein.
                         """
                     )
-                    
-                    // Bewertungstabelle
+
+                    // Dauer-Tabelle
                     VStack(spacing: 0) {
-                        Text("Schlafdauer → Qualitätswert")
+                        Text("Schlafdauer → Basispunkte")
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.5))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                             .padding(.bottom, 8)
-                        
+
                         VStack(spacing: 2) {
-                            BewertungsZeile(stunden: "< 4 Stunden", wert: "2 / 10", farbe: .red)
-                            BewertungsZeile(stunden: "4 – 5 Stunden", wert: "4 / 10", farbe: .orange)
-                            BewertungsZeile(stunden: "5 – 6 Stunden", wert: "5 / 10", farbe: .orange)
-                            BewertungsZeile(stunden: "6 – 7 Stunden", wert: "6 / 10", farbe: .yellow)
-                            BewertungsZeile(stunden: "7 – 8 Stunden", wert: "8 / 10", farbe: cyan)
-                            BewertungsZeile(stunden: "> 8 Stunden", wert: "9 / 10", farbe: .green)
+                            BewertungsZeile(stunden: "< 4 Stunden", wert: "max. 4 / 10", farbe: .red)
+                            BewertungsZeile(stunden: "5 – 6 Stunden", wert: "3 Punkte", farbe: .orange)
+                            BewertungsZeile(stunden: "6 – 7 Stunden", wert: "4 Punkte", farbe: .yellow)
+                            BewertungsZeile(stunden: "7 – 9 Stunden", wert: "6 Punkte ✓", farbe: cyan)
+                        }
+                        .padding(.horizontal)
+                    }
+
+                    // Phasen-Tabelle
+                    VStack(spacing: 0) {
+                        Text("Schlafphasen → Score-Einfluss")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.5))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+                            .padding(.bottom, 8)
+
+                        VStack(spacing: 2) {
+                            BewertungsZeile(stunden: "Tiefschlaf 20–30 %", wert: "+2 Punkte", farbe: .green)
+                            BewertungsZeile(stunden: "Tiefschlaf < 10 %", wert: "−1 Punkt", farbe: .red)
+                            BewertungsZeile(stunden: "REM 21–31 %", wert: "+2 Punkte", farbe: .green)
+                            BewertungsZeile(stunden: "REM < 10 %", wert: "−1 Punkt", farbe: .red)
+                            BewertungsZeile(stunden: "Wachphasen > 15 %", wert: "−1 Punkt", farbe: .orange)
                         }
                         .padding(.horizontal)
                     }
@@ -81,7 +98,7 @@ struct SchlafInfoView: View {
                         • Kernschlaf (Core Sleep): Leichter Schlaf zwischen den Tiefphasen
                         • Wach: Kurze Wachphasen die normal sind
 
-                        ExperiSleep zählt Tief-, REM- und Kernschlaf als echten Schlaf. Nur diese Phasen fließen in deinen Qualitätswert ein.
+                        ExperiSleep zählt Tief-, REM- und Kernschlaf als echten Schlaf. Die Anteile dieser Phasen beeinflussen deinen Qualitätswert direkt: Tiefschlaf sollte 16–33 %, REM-Schlaf 21–31 % der Gesamtschlafzeit ausmachen.
                         """
                     )
                     

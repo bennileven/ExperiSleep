@@ -9,10 +9,16 @@ struct ExperimentDetailView: View {
     @EnvironmentObject private var speicher: CheckInSpeicher
     @State private var importiert = false
     @State private var importiertAnzahl = 0
+    @State private var zeigeKonfliktAlert = false
     @AppStorage("demoModus") var demoAktiv = false
     
     var istAktiv: Bool {
         aktiveExperimente.istAktiv(titel: titel)
+    }
+
+    var konfliktNachricht: String {
+        let name = aktiveExperimente.aktive.first?.titel ?? "ein anderes Experiment"
+        return "Du machst gerade \u{201E}\(name)\u{201C}. Beende oder stoppe dieses Experiment zuerst, bevor du ein neues startest."
     }
     
     var tagAnzahl: Int {
@@ -44,6 +50,11 @@ struct ExperimentDetailView: View {
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
+        .alert("Experiment bereits aktiv", isPresented: $zeigeKonfliktAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(konfliktNachricht)
+        }
     }
     
     var iconTitelBereich: some View {
@@ -90,6 +101,8 @@ struct ExperimentDetailView: View {
         Button(action: {
             if istAktiv {
                 aktiveExperimente.stoppen(titel: titel)
+            } else if !aktiveExperimente.aktive.isEmpty {
+                zeigeKonfliktAlert = true
             } else {
                 aktiveExperimente.starten(titel: titel)
             }
