@@ -134,6 +134,26 @@ class HealthKitManager: ObservableObject {
         healthStore.execute(query)
     }
     
+    // Durchschnittliche Schlafqualität der letzten N Nächte aus HealthKit
+    func schlafdurchschnittLetzteNaechte(anzahl: Int, completion: @escaping (Double?) -> Void) {
+        let gruppe = DispatchGroup()
+        var qualitaeten: [Int] = []
+
+        for i in 1...anzahl {
+            guard let datum = Calendar.current.date(byAdding: .day, value: -i, to: Date()) else { continue }
+            gruppe.enter()
+            schlafdatenFuerNacht(datum: datum) { stunden, qualitaet in
+                if stunden > 0 { qualitaeten.append(qualitaet) }
+                gruppe.leave()
+            }
+        }
+
+        gruppe.notify(queue: .main) {
+            guard !qualitaeten.isEmpty else { completion(nil); return }
+            completion(Double(qualitaeten.reduce(0, +)) / Double(qualitaeten.count))
+        }
+    }
+
     // Letzte N Nächte aus Apple Health importieren
     func vergangeneNaechteImportieren(anzahl: Int, experimentTitel: String, speicher: CheckInSpeicher, completion: @escaping (Int) -> Void) {
         let gruppe = DispatchGroup()

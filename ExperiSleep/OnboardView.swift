@@ -2,7 +2,6 @@ import SwiftUI
 
 struct OnboardingView: View {
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
-    @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
     @AppStorage("baselineStress") var baselineStress = 5.0
     
@@ -31,7 +30,7 @@ struct OnboardingView: View {
                     .disabled(schritt == 0)
 
                     HStack(spacing: 8) {
-                        ForEach(0..<4) { i in
+                        ForEach(0..<3) { i in
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(i <= schritt ? cyan : Color.white.opacity(0.2))
                                 .frame(height: 4)
@@ -48,16 +47,6 @@ struct OnboardingView: View {
                     WillkommensSchritt(cyan: cyan)
                 } else if schritt == 1 {
                     FrageSchritt(
-                        frage: "Wie schläfst du aktuell?",
-                        beschreibung: "Denk an die letzten 2 Wochen",
-                        icon: "moon.fill",
-                        color: .indigo,
-                        linksLabel: "Sehr schlecht",
-                        rechtsLabel: "Sehr gut",
-                        wert: $baselineSchlaf
-                    )
-                } else if schritt == 2 {
-                    FrageSchritt(
                         frage: "Wie ist deine Energie morgens?",
                         beschreibung: "Wie fit fühlst du dich beim Aufwachen?",
                         icon: "bolt.fill",
@@ -66,7 +55,7 @@ struct OnboardingView: View {
                         rechtsLabel: "Topfit",
                         wert: $baselineEnergie
                     )
-                } else if schritt == 3 {
+                } else if schritt == 2 {
                     FrageSchritt(
                         frage: "Wie gestresst bist du?",
                         beschreibung: "Dein allgemeines Stresslevel",
@@ -82,13 +71,13 @@ struct OnboardingView: View {
                 
                 // Button
                 Button(action: {
-                    if schritt < 3 {
+                    if schritt < 2 {
                         withAnimation { schritt += 1 }
                     } else {
                         onboardingAbgeschlossen = true
                     }
                 }) {
-                    Text(schritt == 0 ? "Loslegen" : schritt == 3 ? "Fertig" : "Weiter")
+                    Text(schritt == 0 ? "Loslegen" : schritt == 2 ? "Fertig" : "Weiter")
                         .font(.headline)
                         .foregroundColor(Color(red: 0.05, green: 0.11, blue: 0.24))
                         .frame(maxWidth: .infinity)

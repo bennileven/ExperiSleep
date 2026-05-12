@@ -11,6 +11,7 @@ struct ExperimentDetailView: View {
     @State private var importiertAnzahl = 0
     @State private var zeigeKonfliktAlert = false
     @AppStorage("demoModus") var demoAktiv = false
+    @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     
     var istAktiv: Bool {
         aktiveExperimente.istAktiv(titel: titel)
@@ -105,6 +106,11 @@ struct ExperimentDetailView: View {
                 zeigeKonfliktAlert = true
             } else {
                 aktiveExperimente.starten(titel: titel)
+                HealthKitManager.shared.berechtigungAnfragen { _ in
+                    HealthKitManager.shared.schlafdurchschnittLetzteNaechte(anzahl: 14) { durchschnitt in
+                        if let wert = durchschnitt { baselineSchlaf = wert }
+                    }
+                }
             }
         }) {
             HStack {

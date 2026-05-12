@@ -122,11 +122,11 @@ struct SchlafInfoView: View {
                         farbe: .orange,
                         titel: "Was ist der Ausgangswert?",
                         inhalt: """
-                        Der Ausgangswert ist deine persönliche Schlaf-Baseline — also wie gut du vor dem Experiment geschlafen hast.
+                        Der Ausgangswert ist deine persönliche Schlaf-Baseline — also wie gut du in den Wochen vor einem Experiment durchschnittlich geschlafen hast.
 
-                        Du hast diesen Wert beim ersten Start der App selbst eingeschätzt. Er dient als Vergleichspunkt für alle Experimente.
+                        Er wird automatisch berechnet, wenn du ein neues Experiment startest: ExperiSleep liest dafür die letzten 14 Nächte aus Apple Health und bildet daraus den Durchschnittswert (1–10).
 
-                        Du kannst deinen Ausgangswert jederzeit im Profil anpassen, falls er nicht mehr aktuell ist.
+                        So entsteht ein objektiver, datenbasierter Vergleichspunkt — ohne dass du selbst etwas einschätzen musst. Jedes Experiment erhält damit eine aktuelle Baseline, die deinen echten Schlafstand zum Startzeitpunkt widerspiegelt.
                         """
                     )
                     
