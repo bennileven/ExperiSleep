@@ -378,6 +378,11 @@ struct ContentView: View {
                 CheckInView(experimentTitel: aktivesExperiment)
                     .environmentObject(speicher)
             }
+            .sheet(item: $aktiveExperimente.neuAbgeschlossen) { experiment in
+                ExperimentAbschlussView(experiment: experiment)
+                    .environmentObject(speicher)
+                    .environmentObject(aktiveExperimente)
+            }
         }
     }
     

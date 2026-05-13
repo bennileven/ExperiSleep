@@ -6,8 +6,9 @@ struct ExperiSleepApp: App {
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
     @StateObject private var aktiveExperimente = AktiveExperimente()
     @StateObject private var speicher = CheckInSpeicher()
-    
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("mitteilungenAktiv") var mitteilungenAktiv = true
+    @State private var splashFertig = false
 
     init() {
         FirebaseApp.configure()
@@ -19,7 +20,9 @@ struct ExperiSleepApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if onboardingAbgeschlossen {
+            if !splashFertig {
+                SplashView(onFinished: { splashFertig = true })
+            } else if onboardingAbgeschlossen {
                 ContentView()
                     .environmentObject(aktiveExperimente)
                     .environmentObject(speicher)
@@ -27,6 +30,11 @@ struct ExperiSleepApp: App {
                 OnboardingView()
                     .environmentObject(aktiveExperimente)
                     .environmentObject(speicher)
+            }
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active {
+                aktiveExperimente.pruefeAbgelaufene()
             }
         }
     }
