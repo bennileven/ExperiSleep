@@ -116,6 +116,7 @@ struct CheckInView: View {
                         istBaseline: istBaseline
                     )
                     speicher.speichern(eintrag: eintrag)
+                    NotificationManager.shared.abendErinnerungDeaktivieren()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                         FirebaseManager.shared.checkInSpeichern(eintrag: eintrag)
                     }

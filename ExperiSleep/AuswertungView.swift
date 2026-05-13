@@ -20,6 +20,19 @@ struct AuswertungView: View {
         guard baselineAvgSchlaf > 0 && experimentAvgSchlaf > 0 else { return 0 }
         return experimentAvgSchlaf - baselineAvgSchlaf
     }
+
+    var tageSeitStart: Int {
+        guard let erster = speicher.eintraegeFor(experiment: experimentTitel).map({ $0.datum }).min() else { return 0 }
+        return Calendar.current.dateComponents([.day], from: erster, to: Date()).day ?? 0
+    }
+
+    var hatGenugDaten: Bool {
+        speicher.eintraegeFor(experiment: experimentTitel).count >= 7
+    }
+
+    var experimentHatGeholfen: Bool {
+        verbesserungGegenOnboarding > 0
+    }
     
     var body: some View {
         let _ = print("Suche nach: '\(experimentTitel)' — Gefunden: \(speicher.eintraege.count) Einträge total, \(speicher.eintraegeFor(experiment: experimentTitel).count) für dieses Experiment")
@@ -137,7 +150,17 @@ struct AuswertungView: View {
                         )
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 30)
+
+                    // Wissenschaftliche Analyse
+                    if hatGenugDaten {
+                        WissenschaftlicheAnalyseView(
+                            titel: experimentTitel,
+                            hatGeholfen: experimentHatGeholfen,
+                            tageSeitStart: tageSeitStart
+                        )
+                    }
+
+                    Spacer().frame(height: 30)
                 }
             }
         }
@@ -219,6 +242,108 @@ struct BalkenRow: View {
             }
             .frame(height: 10)
         }
+    }
+}
+
+// MARK: - Wissenschaftliche Analyse
+
+struct WissenschaftlicheAnalyseView: View {
+    var titel: String
+    var hatGeholfen: Bool
+    var tageSeitStart: Int
+
+    let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
+
+    var analyse: ExperimentAnalyse { wissenschaftlicheAnalyse(fuer: titel) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // Header
+            HStack(spacing: 10) {
+                Image(systemName: "atom")
+                    .foregroundColor(.purple)
+                    .font(.system(size: 18))
+                Text("Wissenschaftliche Analyse")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                Spacer()
+                if tageSeitStart >= 14 {
+                    Text("Abgeschlossen")
+                        .font(.caption2)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.green.opacity(0.2))
+                        .foregroundColor(.green)
+                        .cornerRadius(8)
+                }
+            }
+            .padding()
+            .padding(.bottom, 4)
+
+            Divider().background(Color.white.opacity(0.1)).padding(.horizontal)
+
+            // Mechanismus
+            AnalyseBlock(
+                icon: "gearshape.fill",
+                farbe: cyan,
+                titel: "Wie wirkt dieses Experiment?",
+                text: analyse.mechanismus
+            )
+
+            Divider().background(Color.white.opacity(0.08)).padding(.horizontal)
+
+            // Personalisierte Auswertung
+            AnalyseBlock(
+                icon: hatGeholfen ? "checkmark.seal.fill" : "questionmark.circle.fill",
+                farbe: hatGeholfen ? .green : .orange,
+                titel: hatGeholfen ? "Warum hat es bei dir geholfen" : "Warum hat es vielleicht nicht geholfen",
+                text: hatGeholfen ? analyse.wennErfolgreich : analyse.wennNichtErfolgreich
+            )
+
+            Divider().background(Color.white.opacity(0.08)).padding(.horizontal)
+
+            // Tipp
+            AnalyseBlock(
+                icon: "lightbulb.fill",
+                farbe: .yellow,
+                titel: "Tipp für die Zukunft",
+                text: analyse.tipp
+            )
+        }
+        .background(Color.white.opacity(0.06))
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+        )
+        .padding(.horizontal)
+    }
+}
+
+struct AnalyseBlock: View {
+    var icon: String
+    var farbe: Color
+    var titel: String
+    var text: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundColor(farbe)
+                    .font(.system(size: 13))
+                Text(titel)
+                    .font(.subheadline)
+                    .bold()
+                    .foregroundColor(.white)
+            }
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.7))
+                .lineSpacing(4)
+        }
+        .padding()
     }
 }
 

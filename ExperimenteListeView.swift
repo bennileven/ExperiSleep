@@ -1,18 +1,14 @@
-//
-//  ExperimenteListeView.swift
-//  ExperiSleep
-//
-//  Created by benni leven on 09.05.26.
-//
 import SwiftUI
 
 struct ExperimenteListeView: View {
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @State private var zeigeErstellen = false
     @State private var eigeneExperimente: [EigenesExperiment] = []
-    
+    @State private var aktiveTab = 0
+
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
-    
+    private let speicherSchluessel = "eigeneExperimente"
+
     let kategorien: [(name: String, icon: String, farbe: Color, experimente: [(titel: String, icon: String, farbe: Color)])] = [
         (
             name: "Licht & Bildschirm",
@@ -65,108 +61,251 @@ struct ExperimenteListeView: View {
             ]
         )
     ]
-    
+
     var body: some View {
         ZStack {
             Color(red: 0.05, green: 0.11, blue: 0.24)
                 .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    
-                    // Kategorien
-                    ForEach(kategorien, id: \.name) { kategorie in
-                        NavigationLink(destination: KategorieDetailView(
-                            kategorieName: kategorie.name,
-                            kategorieIcon: kategorie.icon,
-                            kategorieFarbe: kategorie.farbe,
-                            experimente: kategorie.experimente
-                        )) {
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(kategorie.farbe.opacity(0.2))
-                                        .frame(width: 44, height: 44)
-                                    Image(systemName: kategorie.icon)
-                                        .foregroundColor(kategorie.farbe)
-                                        .font(.system(size: 20))
-                                }
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(kategorie.name)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                    Text("\(kategorie.experimente.count) Experimente")
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.5))
-                                }
-                                
-                                Spacer()
-                                
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.white.opacity(0.3))
-                                    .font(.caption)
-                            }
-                            .padding()
-                            .background(Color.white.opacity(0.06))
-                            .cornerRadius(14)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                            )
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .padding(.horizontal)
-                    }
-                    
-                    // Eigenes Experiment
-                    Button(action: { zeigeErstellen = true }) {
+
+            VStack(spacing: 0) {
+                Text("Experiment starten")
+                    .font(.largeTitle)
+                    .bold()
+                    .foregroundColor(cyan)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
+
+                Picker("", selection: $aktiveTab) {
+                    Text("Empfohlen").tag(0)
+                    Text("Meine").tag(1)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+
+                if aktiveTab == 0 {
+                    empfohleneListe
+                } else {
+                    meineListe
+                }
+            }
+        }
+        .navigationTitle("")
+        #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        #endif
+        .onAppear { laden() }
+        .onChange(of: eigeneExperimente) { sichern() }
+        .sheet(isPresented: $zeigeErstellen) {
+            ExperimentErstellenView(experimente: $eigeneExperimente)
+        }
+    }
+
+    // MARK: - Empfohlen Tab
+
+    var empfohleneListe: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                ForEach(kategorien, id: \.name) { kategorie in
+                    NavigationLink(destination: KategorieDetailView(
+                        kategorieName: kategorie.name,
+                        kategorieIcon: kategorie.icon,
+                        kategorieFarbe: kategorie.farbe,
+                        experimente: kategorie.experimente
+                    )) {
                         HStack(spacing: 16) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
-                                    .fill(cyan.opacity(0.2))
+                                    .fill(kategorie.farbe.opacity(0.2))
                                     .frame(width: 44, height: 44)
-                                Image(systemName: "plus")
-                                    .foregroundColor(cyan)
+                                Image(systemName: kategorie.icon)
+                                    .foregroundColor(kategorie.farbe)
                                     .font(.system(size: 20))
                             }
-                            
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Eigenes Experiment")
+                                Text(kategorie.name)
                                     .font(.headline)
-                                    .foregroundColor(cyan)
-                                Text("Erstelle dein eigenes Experiment")
+                                    .foregroundColor(.white)
+                                Text("\(kategorie.experimente.count) Experimente")
                                     .font(.caption)
                                     .foregroundColor(.white.opacity(0.5))
                             }
-                            
                             Spacer()
-                            
                             Image(systemName: "chevron.right")
                                 .foregroundColor(.white.opacity(0.3))
                                 .font(.caption)
                         }
                         .padding()
-                        .background(cyan.opacity(0.08))
+                        .background(Color.white.opacity(0.06))
                         .cornerRadius(14)
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
-                                .stroke(cyan.opacity(0.2), lineWidth: 1)
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
                         )
                     }
+                    .buttonStyle(PlainButtonStyle())
                     .padding(.horizontal)
-                    .padding(.bottom, 30)
                 }
-                .padding(.top, 16)
             }
+            .padding(.top, 8)
+            .padding(.bottom, 30)
         }
-        .navigationTitle("Experiment starten")
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.large)
-        #endif
-        .sheet(isPresented: $zeigeErstellen) {
-            ExperimentErstellenView(experimente: $eigeneExperimente)
+    }
+
+    // MARK: - Meine Tab
+
+    var meineListe: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Group {
+                if eigeneExperimente.isEmpty {
+                    leerZustand
+                } else {
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            ForEach(eigeneExperimente) { experiment in
+                                NavigationLink(destination: ExperimentDetailView(
+                                    titel: experiment.titel,
+                                    icon: experiment.icon,
+                                    color: farbeVon(name: experiment.farbname)
+                                )) {
+                                    EigenesExperimentZeile(experiment: experiment)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal)
+                                .contextMenu {
+                                    Button(role: .destructive) {
+                                        eigeneExperimente.removeAll { $0.id == experiment.id }
+                                    } label: {
+                                        Label("Löschen", systemImage: "trash")
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 100)
+                    }
+                }
+            }
+
+            // Erstellen-Button
+            Button(action: { zeigeErstellen = true }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                    Text("Neu")
+                }
+                .font(.headline)
+                .foregroundColor(Color(red: 0.05, green: 0.11, blue: 0.24))
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .background(cyan)
+                .cornerRadius(30)
+                .shadow(color: cyan.opacity(0.4), radius: 8, x: 0, y: 4)
+            }
+            .padding(.trailing, 24)
+            .padding(.bottom, 30)
         }
+    }
+
+    var leerZustand: some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Image(systemName: "flask")
+                .font(.system(size: 50))
+                .foregroundColor(.white.opacity(0.2))
+            Text("Noch keine eigenen Experimente")
+                .font(.headline)
+                .foregroundColor(.white.opacity(0.5))
+            Text("Erstelle ein eigenes Experiment und teste was deinen Schlaf wirklich beeinflusst.")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.35))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            Spacer()
+        }
+    }
+
+    // MARK: - Persistenz
+
+    func laden() {
+        guard let data = UserDefaults.standard.data(forKey: speicherSchluessel),
+              let decoded = try? JSONDecoder().decode([EigenesExperiment].self, from: data)
+        else { return }
+        eigeneExperimente = decoded
+    }
+
+    func sichern() {
+        if let data = try? JSONEncoder().encode(eigeneExperimente) {
+            UserDefaults.standard.set(data, forKey: speicherSchluessel)
+        }
+    }
+
+    func farbeVon(name: String) -> Color {
+        switch name {
+        case "blue": return .blue
+        case "green": return .green
+        case "orange": return .orange
+        case "pink": return .pink
+        case "purple": return .purple
+        case "red": return .red
+        default: return .indigo
+        }
+    }
+}
+
+// MARK: - Zeile für eigenes Experiment
+
+struct EigenesExperimentZeile: View {
+    var experiment: EigenesExperiment
+
+    func farbeVon(name: String) -> Color {
+        switch name {
+        case "blue": return .blue
+        case "green": return .green
+        case "orange": return .orange
+        case "pink": return .pink
+        case "purple": return .purple
+        case "red": return .red
+        default: return .indigo
+        }
+    }
+
+    var farbe: Color { farbeVon(name: experiment.farbname) }
+
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(farbe.opacity(0.2))
+                    .frame(width: 44, height: 44)
+                Image(systemName: experiment.icon)
+                    .foregroundColor(farbe)
+                    .font(.system(size: 20))
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(experiment.titel)
+                    .font(.headline)
+                    .foregroundColor(.white)
+                if !experiment.beschreibung.isEmpty {
+                    Text(experiment.beschreibung)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.5))
+                        .lineLimit(1)
+                }
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .foregroundColor(.white.opacity(0.3))
+                .font(.caption)
+        }
+        .padding()
+        .background(Color.white.opacity(0.06))
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(farbe.opacity(0.2), lineWidth: 1)
+        )
     }
 }
 
@@ -176,4 +315,3 @@ struct ExperimenteListeView: View {
             .environmentObject(AktiveExperimente())
     }
 }
-

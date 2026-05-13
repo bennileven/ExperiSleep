@@ -368,6 +368,12 @@ struct ContentView: View {
             #if os(iOS)
             .navigationBarHidden(true)
             #endif
+            .onAppear {
+                NotificationManager.shared.erinnerungenPlanen()
+                if heuteCheckInGemacht {
+                    NotificationManager.shared.abendErinnerungDeaktivieren()
+                }
+            }
             .sheet(isPresented: $zeigeCheckIn) {
                 CheckInView(experimentTitel: aktivesExperiment)
                     .environmentObject(speicher)

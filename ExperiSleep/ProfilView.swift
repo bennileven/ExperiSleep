@@ -15,6 +15,7 @@ struct ProfilView: View {
     @AppStorage("baselineStress") var baselineStress = 5.0
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = true
     @AppStorage("nutzername") var nutzername = "Mein Profil"
+    @AppStorage("mitteilungenAktiv") var mitteilungenAktiv = true
     @State private var zeigeNameBearbeiten = false
     @State private var neuerName = ""
     
@@ -108,6 +109,32 @@ struct ProfilView: View {
                     }
                     //SchlafInfo//
                     
+                    NavigationLink(destination: VerlaufView()
+                        .environmentObject(speicher)
+                        .environmentObject(aktiveExperimente)
+                    ) {
+                        HStack {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .foregroundColor(.indigo)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Vergangene Experimente")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white)
+                                Text("\(aktiveExperimente.vergangene.count) abgeschlossen")
+                                    .font(.caption2)
+                                    .foregroundColor(.white.opacity(0.45))
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.white.opacity(0.3))
+                                .font(.caption)
+                        }
+                        .padding()
+                        .background(Color.white.opacity(0.06))
+                        .cornerRadius(14)
+                    }
+                    .padding(.horizontal)
+
                     NavigationLink(destination: SchlafInfoView()) {
                         HStack {
                             Image(systemName: "info.circle.fill")
@@ -196,6 +223,38 @@ struct ProfilView: View {
                         }
                     }
                     
+                    // ── Einstellungen ──
+                    VStack(spacing: 12) {
+                        Toggle(isOn: $mitteilungenAktiv) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "bell.fill")
+                                    .foregroundColor(cyan)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Erinnerungen")
+                                        .font(.subheadline)
+                                        .foregroundColor(.white)
+                                    Text("12:00 Uhr & 21:00 Uhr (falls kein Check-in)")
+                                        .font(.caption2)
+                                        .foregroundColor(.white.opacity(0.45))
+                                }
+                            }
+                        }
+                        .tint(cyan)
+                        .padding()
+                        .background(Color.white.opacity(0.06))
+                        .cornerRadius(14)
+                        .onChange(of: mitteilungenAktiv) { aktiv in
+                            if aktiv {
+                                NotificationManager.shared.berechtigungAnfragen()
+                                NotificationManager.shared.erinnerungenPlanen()
+                            } else {
+                                NotificationManager.shared.alleDeaktivieren()
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+
                     // ── Daten zurücksetzen ──
                     VStack(spacing: 12) {
                         Button(action: {

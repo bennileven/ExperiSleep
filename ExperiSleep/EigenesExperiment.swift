@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct EigenesExperiment: Identifiable, Codable {
+struct EigenesExperiment: Identifiable, Codable, Equatable {
     var id = UUID()
     var titel: String
     var beschreibung: String
