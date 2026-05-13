@@ -102,10 +102,13 @@ struct ExperimentDetailView: View {
     var startenStoppenButton: some View {
         Button(action: {
             if istAktiv {
+                HapticManager.warning()
                 aktiveExperimente.stoppen(titel: titel)
             } else if !aktiveExperimente.aktive.isEmpty {
+                HapticManager.impact(.rigid)
                 zeigeKonfliktAlert = true
             } else {
+                HapticManager.impact(.heavy)
                 aktiveExperimente.starten(titel: titel)
                 HealthKitManager.shared.berechtigungAnfragen { _ in
                     HealthKitManager.shared.schlafdurchschnittLetzteNaechte(anzahl: 14) { durchschnitt in

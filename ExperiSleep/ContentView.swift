@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var zeigeErstellen = false
     @State private var zeigeCheckIn = false
+    @State private var meilensteinZuZeigen: Int? = nil
+    @AppStorage("gezeigterStreakMeilenstein") var gezeigterMeilenstein = 0
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @EnvironmentObject private var speicher: CheckInSpeicher
     @EnvironmentObject var theme: AppTheme
@@ -202,6 +204,69 @@ struct ContentView: View {
                         .cornerRadius(20)
                         .padding(.horizontal)
                         
+                        // ── Laufendes Experiment ──
+                        if !aktiveExperimente.aktive.isEmpty {
+                            ForEach(aktiveExperimente.aktiveNamen, id: \.self) { titel in
+                                NavigationLink(destination: ExperimentDetailView(
+                                    titel: titel,
+                                    icon: "moon.stars.fill",
+                                    color: .indigo
+                                )) {
+                                    VStack(spacing: 10) {
+                                        HStack {
+                                            Image(systemName: "moon.stars.fill")
+                                                .foregroundColor(.indigo)
+                                                .frame(width: 30)
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(titel)
+                                                    .font(.body)
+                                                    .foregroundColor(.primary)
+                                                if let start = aktiveExperimente.startDatum(fuer: titel) {
+                                                    let tage = Calendar.current.dateComponents([.day], from: start, to: Date()).day ?? 0
+                                                    Text("Tag \(tage + 1) von 14")
+                                                        .font(.caption)
+                                                        .foregroundColor(.green.opacity(0.8))
+                                                }
+                                            }
+                                            Spacer()
+                                            Circle()
+                                                .fill(Color.green)
+                                                .frame(width: 8, height: 8)
+                                            Image(systemName: "chevron.right")
+                                                .foregroundColor(.secondary)
+                                                .font(.caption)
+                                        }
+
+                                        if let start = aktiveExperimente.startDatum(fuer: titel) {
+                                            let tage = min(Calendar.current.dateComponents([.day], from: start, to: Date()).day ?? 0, 13)
+                                            let fortschritt = CGFloat(tage + 1) / 14.0
+                                            GeometryReader { geo in
+                                                ZStack(alignment: .leading) {
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .fill(Color.green.opacity(0.15))
+                                                        .frame(height: 6)
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .fill(Color.green)
+                                                        .frame(width: geo.size.width * fortschritt, height: 6)
+                                                        .animation(.easeInOut(duration: 0.6), value: fortschritt)
+                                                }
+                                            }
+                                            .frame(height: 6)
+                                        }
+                                    }
+                                    .padding()
+                                    .background(Color.green.opacity(0.08))
+                                    .cornerRadius(14)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 14)
+                                            .stroke(Color.green.opacity(0.2), lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal)
+                            }
+                        }
+
                         // ── Schlaf Dashboard ──
                         VStack(spacing: 16) {
                             HStack {
@@ -278,66 +343,6 @@ struct ContentView: View {
                             }
                         }
                         
-                        // ── Laufende Experimente ──
-                        if !aktiveExperimente.aktive.isEmpty {
-                            VStack(spacing: 12) {
-                                HStack {
-                                    Circle()
-                                        .fill(Color.green)
-                                        .frame(width: 8, height: 8)
-                                    Text("Laufende Experimente")
-                                        .font(.headline)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                    Text("\(aktiveExperimente.aktive.count) aktiv")
-                                        .font(.caption)
-                                        .foregroundColor(.green.opacity(0.8))
-                                }
-                                .padding(.horizontal)
-                                
-                                ForEach(aktiveExperimente.aktiveNamen, id: \.self) { titel in
-                                    NavigationLink(destination: ExperimentDetailView(
-                                        titel: titel,
-                                        icon: "moon.stars.fill",
-                                        color: .indigo
-                                    )) {
-                                        HStack {
-                                            Image(systemName: "moon.stars.fill")
-                                                .foregroundColor(.indigo)
-                                                .frame(width: 30)
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(titel)
-                                                    .font(.body)
-                                                    .foregroundColor(.primary)
-                                                if let start = aktiveExperimente.startDatum(fuer: titel) {
-                                                    let tage = Calendar.current.dateComponents([.day], from: start, to: Date()).day ?? 0
-                                                    Text("Tag \(tage + 1) von 14")
-                                                        .font(.caption)
-                                                        .foregroundColor(.green.opacity(0.8))
-                                                }
-                                            }
-                                            Spacer()
-                                            Circle()
-                                                .fill(Color.green)
-                                                .frame(width: 8, height: 8)
-                                            Image(systemName: "chevron.right")
-                                                .foregroundColor(.secondary)
-                                                .font(.caption)
-                                        }
-                                        .padding()
-                                        .background(Color.green.opacity(0.08))
-                                        .cornerRadius(14)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 14)
-                                                .stroke(Color.green.opacity(0.2), lineWidth: 1)
-                                        )
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                    .padding(.horizontal)
-                                }
-                            }
-                        }
-                        
                         // ── Experiment starten Button ──
                         NavigationLink(destination: ExperimenteListeView()) {
                             HStack {
@@ -374,11 +379,22 @@ struct ContentView: View {
                 if heuteCheckInGemacht {
                     NotificationManager.shared.abendErinnerungDeaktivieren()
                 }
+                pruefeStreakMeilenstein()
             }
+            .onChange(of: streak) { _ in pruefeStreakMeilenstein() }
             .sheet(isPresented: $zeigeCheckIn) {
                 CheckInView(experimentTitel: aktivesExperiment)
                     .environmentObject(speicher)
                     .environmentObject(theme)
+            }
+            .overlay {
+                if let tage = meilensteinZuZeigen {
+                    StreakMeilensteinView(tage: tage) {
+                        meilensteinZuZeigen = nil
+                    }
+                    .transition(.opacity)
+                    .zIndex(99)
+                }
             }
             .sheet(item: $aktiveExperimente.neuAbgeschlossen) { experiment in
                 ExperimentAbschlussView(experiment: experiment)
@@ -388,6 +404,15 @@ struct ContentView: View {
         }
     }
     
+    func pruefeStreakMeilenstein() {
+        if streak < gezeigterMeilenstein { gezeigterMeilenstein = 0 }
+        for m in [7, 14] where streak >= m && gezeigterMeilenstein < m {
+            meilensteinZuZeigen = m
+            gezeigterMeilenstein = m
+            break
+        }
+    }
+
     func hatEintragFuerTag(tag: Int) -> Bool {
         let datum = Calendar.current.date(byAdding: .day, value: -(6 - tag), to: Date())!
         let zielTag = Calendar.current.startOfDay(for: datum)
