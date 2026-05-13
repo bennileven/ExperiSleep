@@ -64,18 +64,30 @@ class FirebaseManager: ObservableObject {
             }
     }
     
+    func profilAktualisieren(punkte: Int, name: String, streak: Int, experimente: Int) {
+        guard !nutzerID.isEmpty else { return }
+        let data: [String: Any] = [
+            "anzeigeName": name.isEmpty ? "Schläfer" : name,
+            "punkte": punkte,
+            "streak": streak,
+            "experimente": experimente,
+            "zuletzt": Date()
+        ]
+        db.collection("nutzer_profile").document(nutzerID).setData(data, merge: true)
+    }
+
     func ranglisteLaden(completion: @escaping ([RanglisteEintrag]) -> Void) {
-        db.collection("streak_scores")
-            .order(by: "streak", descending: true)
-            .limit(to: 20)
+        db.collection("nutzer_profile")
+            .order(by: "punkte", descending: true)
+            .limit(to: 50)
             .getDocuments { snapshot, error in
-                guard let docs = snapshot?.documents else { return }
-                
+                guard let docs = snapshot?.documents else { completion([]); return }
                 let eintraege = docs.compactMap { doc -> RanglisteEintrag? in
                     let data = doc.data()
                     return RanglisteEintrag(
                         id: doc.documentID,
-                        anzeigeName: data["anzeigeName"] as? String ?? "Nutzer",
+                        anzeigeName: data["anzeigeName"] as? String ?? "Schläfer",
+                        punkte: data["punkte"] as? Int ?? 0,
                         streak: data["streak"] as? Int ?? 0,
                         experimente: data["experimente"] as? Int ?? 0
                     )
@@ -83,26 +95,13 @@ class FirebaseManager: ObservableObject {
                 completion(eintraege)
             }
     }
-    
-    func streakHochladen(streak: Int, experimente: Int) {
-        guard !nutzerID.isEmpty else { return }
-        
-        let data: [String: Any] = [
-            "anzeigeName": "Nutzer \(String(nutzerID.prefix(4)))",
-            "streak": streak,
-            "experimente": experimente,
-            "zuletzt": Date()
-        ]
-        
-        db.collection("streak_scores")
-            .document(nutzerID)
-            .setData(data)
-    }
 }
 
 struct RanglisteEintrag: Identifiable {
     var id: String
     var anzeigeName: String
+    var punkte: Int
     var streak: Int
     var experimente: Int
 }
+

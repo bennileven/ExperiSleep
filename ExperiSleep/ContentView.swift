@@ -110,17 +110,31 @@ struct ContentView: View {
                                 }
                             }
                             Spacer()
-                            NavigationLink(destination: ProfilView()
-                                .environmentObject(speicher)
-                                .environmentObject(aktiveExperimente)
-                            ) {
-                                ZStack {
-                                    Circle()
-                                        .fill(theme.karte)
-                                        .frame(width: 44, height: 44)
-                                    Image(systemName: "person.fill")
-                                        .foregroundColor(cyan)
-                                        .font(.system(size: 20))
+                            HStack(spacing: 10) {
+                                NavigationLink(destination: RanglisteView()
+                                    .environmentObject(theme)
+                                ) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(theme.karte)
+                                            .frame(width: 44, height: 44)
+                                        Image(systemName: "trophy.fill")
+                                            .foregroundColor(.yellow)
+                                            .font(.system(size: 18))
+                                    }
+                                }
+                                NavigationLink(destination: ProfilView()
+                                    .environmentObject(speicher)
+                                    .environmentObject(aktiveExperimente)
+                                ) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(theme.karte)
+                                            .frame(width: 44, height: 44)
+                                        Image(systemName: "person.fill")
+                                            .foregroundColor(cyan)
+                                            .font(.system(size: 20))
+                                    }
                                 }
                             }
                         } // ← HStack Ende
@@ -409,8 +423,13 @@ struct ContentView: View {
         for m in [7, 14] where streak >= m && gezeigterMeilenstein < m {
             meilensteinZuZeigen = m
             gezeigterMeilenstein = m
+            PunkteManager.shared.streakMeilenstein(tage: m)
             break
         }
+        // Streak immer aktuell halten für Rangliste
+        UserDefaults.standard.set(streak, forKey: "letzterStreak")
+        UserDefaults.standard.set(aktiveExperimente.vergangene.count, forKey: "abgeschlosseneExperimente")
+        PunkteManager.shared.sync()
     }
 
     func hatEintragFuerTag(tag: Int) -> Bool {

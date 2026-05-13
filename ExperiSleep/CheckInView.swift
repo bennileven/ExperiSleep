@@ -117,6 +117,7 @@ struct CheckInView: View {
                         istBaseline: istBaseline
                     )
                     speicher.speichern(eintrag: eintrag)
+                    PunkteManager.shared.checkIn()
                     HapticManager.success()
                     NotificationManager.shared.abendErinnerungDeaktivieren()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {

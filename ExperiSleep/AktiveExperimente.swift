@@ -48,6 +48,7 @@ class AktiveExperimente: ObservableObject {
             sichern()
             sichernVerlauf()
             neuAbgeschlossen = vergangene.first
+            PunkteManager.shared.experimentAbgeschlossen()
         }
     }
 

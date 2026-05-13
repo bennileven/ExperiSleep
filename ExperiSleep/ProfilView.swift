@@ -94,10 +94,10 @@ struct ProfilView: View {
                                 farbe: cyan
                             )
                             ProfilKarte(
-                                titel: "Experimente",
-                                wert: "\(gesamtExperimente)",
-                                icon: "flask.fill",
-                                farbe: .indigo
+                                titel: "XP Punkte",
+                                wert: "\(PunkteManager.shared.punkte)",
+                                icon: "trophy.fill",
+                                farbe: .yellow
                             )
                             ProfilKarte(
                                 titel: "Verbesserung",
