@@ -5,9 +5,15 @@ struct OnboardingView: View {
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
     @AppStorage("baselineStress") var baselineStress = 5.0
-    
+    @AppStorage("nutzername") var nutzername = ""
+
     @State private var schritt = 0
+    @State private var nameEingabe = ""
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
+
+    var weiterDeaktiviert: Bool {
+        schritt == 1 && nameEingabe.trimmingCharacters(in: .whitespaces).isEmpty
+    }
     
     var body: some View {
         ZStack {
@@ -31,7 +37,7 @@ struct OnboardingView: View {
                     .disabled(schritt == 0)
 
                     HStack(spacing: 8) {
-                        ForEach(0..<3) { i in
+                        ForEach(0..<4) { i in
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(i <= schritt ? cyan : Color.primary.opacity(0.15))
                                 .frame(height: 4)
@@ -47,6 +53,8 @@ struct OnboardingView: View {
                 if schritt == 0 {
                     WillkommensSchritt(cyan: cyan)
                 } else if schritt == 1 {
+                    BenutzerNameSchritt(nameEingabe: $nameEingabe, cyan: cyan)
+                } else if schritt == 2 {
                     FrageSchritt(
                         frage: "Wie ist deine Energie morgens?",
                         beschreibung: "Wie fit fühlst du dich beim Aufwachen?",
@@ -56,7 +64,7 @@ struct OnboardingView: View {
                         rechtsLabel: "Topfit",
                         wert: $baselineEnergie
                     )
-                } else if schritt == 2 {
+                } else if schritt == 3 {
                     FrageSchritt(
                         frage: "Wie gestresst bist du?",
                         beschreibung: "Dein allgemeines Stresslevel",
@@ -72,20 +80,28 @@ struct OnboardingView: View {
                 
                 // Button
                 Button(action: {
-                    if schritt < 2 {
+                    if schritt == 1 {
+                        nutzername = nameEingabe.trimmingCharacters(in: .whitespaces)
+                        HapticManager.impact()
+                        withAnimation { schritt += 1 }
+                    } else if schritt < 3 {
+                        HapticManager.soft()
                         withAnimation { schritt += 1 }
                     } else {
+                        HapticManager.success()
                         onboardingAbgeschlossen = true
                     }
                 }) {
-                    Text(schritt == 0 ? "Loslegen" : schritt == 2 ? "Fertig" : "Weiter")
+                    Text(schritt == 0 ? "Loslegen" : schritt == 3 ? "Fertig" : "Weiter")
                         .font(.headline)
-                        .foregroundColor(theme.hintergrund)
+                        .foregroundColor(weiterDeaktiviert ? .secondary : theme.hintergrund)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(cyan)
+                        .background(weiterDeaktiviert ? Color.primary.opacity(0.1) : cyan)
                         .cornerRadius(14)
+                        .animation(.easeInOut(duration: 0.2), value: weiterDeaktiviert)
                 }
+                .disabled(weiterDeaktiviert)
                 .padding(.horizontal)
                 .padding(.bottom, 30)
             }
@@ -126,6 +142,59 @@ struct WillkommensSchritt: View {
             .padding()
             .glassEffect(in: RoundedRectangle(cornerRadius: 14))
             .padding(.horizontal)
+        }
+    }
+}
+
+struct BenutzerNameSchritt: View {
+    @Binding var nameEingabe: String
+    let cyan: Color
+    @FocusState private var fokussiert: Bool
+
+    var body: some View {
+        VStack(spacing: 28) {
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 60))
+                .foregroundColor(cyan)
+
+            VStack(spacing: 10) {
+                Text("Wie heißt du?")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+
+                Text("Dein Name erscheint in der Community-Rangliste. Du kannst ihn jederzeit im Profil ändern.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+
+            VStack(spacing: 8) {
+                TextField("z.B. SleepHero99", text: $nameEingabe)
+                    .font(.title3)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                    .focused($fokussiert)
+                    .onAppear { fokussiert = true }
+                    .submitLabel(.done)
+
+                if !nameEingabe.isEmpty {
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                            .font(.caption)
+                        Text("Hallo, \(nameEingabe)! 👋")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .transition(.opacity.combined(with: .scale))
+                }
+            }
+            .padding(.horizontal)
+            .animation(.easeInOut, value: nameEingabe.isEmpty)
         }
     }
 }
