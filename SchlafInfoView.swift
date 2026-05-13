@@ -8,11 +8,12 @@
 import SwiftUI
 
 struct SchlafInfoView: View {
+    @EnvironmentObject var theme: AppTheme
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
     
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
             
             ScrollView {
@@ -26,11 +27,11 @@ struct SchlafInfoView: View {
                         Text("Wie wird mein Schlaf analysiert?")
                             .font(.title2)
                             .bold()
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
                         Text("Alle Infos zur Datenerfassung und Auswertung")
                             .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 20)
@@ -52,7 +53,7 @@ struct SchlafInfoView: View {
                     VStack(spacing: 0) {
                         Text("Schlafdauer → Basispunkte")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                             .padding(.bottom, 8)
@@ -70,7 +71,7 @@ struct SchlafInfoView: View {
                     VStack(spacing: 0) {
                         Text("Schlafphasen → Score-Einfluss")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                             .padding(.bottom, 8)
@@ -171,6 +172,7 @@ struct SchlafInfoView: View {
 }
 
 struct InfoKarte: View {
+    @EnvironmentObject var theme: AppTheme
     var icon: String
     var farbe: Color
     var titel: String
@@ -184,16 +186,16 @@ struct InfoKarte: View {
                     .font(.system(size: 18))
                 Text(titel)
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
             }
             Text(inhalt)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .lineSpacing(4)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(14)
         .padding(.horizontal)
     }
@@ -208,7 +210,7 @@ struct BewertungsZeile: View {
         HStack {
             Text(stunden)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(.primary.opacity(0.8))
             Spacer()
             Text(wert)
                 .font(.subheadline)
@@ -217,7 +219,7 @@ struct BewertungsZeile: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color.white.opacity(0.04))
+        .background(Color.primary.opacity(0.04))
         .cornerRadius(8)
     }
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct ExperimentAbschlussView: View {
     var experiment: AbgeschlossenesExperiment
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @Environment(\.dismiss) private var dismiss
 
@@ -13,7 +14,7 @@ struct ExperimentAbschlussView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -33,12 +34,12 @@ struct ExperimentAbschlussView: View {
                     Text("🏆 Experiment abgeschlossen!")
                         .font(.title2)
                         .bold()
-                        .foregroundColor(.white)
+                        .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
 
                     Text(experiment.titel)
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 30)
                 }
@@ -68,7 +69,7 @@ struct ExperimentAbschlussView: View {
                 // Motivationstext
                 Text("Du hast 14 Tage durchgehalten und echte Daten über deinen Schlaf gesammelt. Jetzt sieh dir an, was das Experiment bewirkt hat.")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 30)
                     .padding(.bottom, 30)
@@ -81,7 +82,7 @@ struct ExperimentAbschlussView: View {
                             Text("Auswertung ansehen")
                                 .font(.headline)
                         }
-                        .foregroundColor(Color(red: 0.05, green: 0.11, blue: 0.24))
+                        .foregroundColor(theme.hintergrund)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(cyan)
@@ -91,7 +92,7 @@ struct ExperimentAbschlussView: View {
                     Button(action: { aktiveExperimente.neuAbgeschlossen = nil; dismiss() }) {
                         Text("Später ansehen")
                             .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.secondary)
                     }
                 }
                 .padding(.horizontal)
@@ -105,6 +106,7 @@ struct ExperimentAbschlussView: View {
             NavigationView {
                 AuswertungView(experimentTitel: experiment.titel)
                     .environmentObject(speicher)
+                    .environmentObject(theme)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button("Fertig") {
@@ -119,6 +121,7 @@ struct ExperimentAbschlussView: View {
 }
 
 struct AbschlussKarte: View {
+    @EnvironmentObject var theme: AppTheme
     var wert: String
     var label: String
     var icon: String
@@ -131,14 +134,14 @@ struct AbschlussKarte: View {
                 .font(.system(size: 18))
             Text(wert)
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             Text(label)
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(12)
     }
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct KategorieDetailView: View {
+    @EnvironmentObject var theme: AppTheme
     var kategorieName: String
     var kategorieIcon: String
     var kategorieFarbe: Color
@@ -15,7 +16,7 @@ struct KategorieDetailView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
             
             ScrollView {
@@ -36,15 +37,15 @@ struct KategorieDetailView: View {
                             Text(kategorieName)
                                 .font(.title2)
                                 .bold()
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                             Text("\(experimente.count) Experimente verfügbar")
                                 .font(.caption)
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(.secondary)
                         }
                         Spacer()
                     }
                     .padding()
-                    .background(Color.white.opacity(0.06))
+                    .background(theme.karte)
                     .cornerRadius(14)
                     .padding(.horizontal)
                     .padding(.top, 8)
@@ -68,20 +69,20 @@ struct KategorieDetailView: View {
                                 
                                 Text(exp.titel)
                                     .font(.body)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.primary)
                                 
                                 Spacer()
                                 
                                 Image(systemName: "chevron.right")
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(.secondary)
                                     .font(.caption)
                             }
                             .padding()
-                            .background(Color.white.opacity(0.06))
+                            .background(theme.karte)
                             .cornerRadius(14)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                    .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                             )
                         }
                         .buttonStyle(PlainButtonStyle())

@@ -3,12 +3,13 @@ import SwiftUI
 struct VerlaufView: View {
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
 
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
 
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
 
             if aktiveExperimente.vergangene.isEmpty {
@@ -20,6 +21,7 @@ struct VerlaufView: View {
                             NavigationLink(destination:
                                 AuswertungView(experimentTitel: experiment.titel)
                                     .environmentObject(speicher)
+                                    .environmentObject(theme)
                             ) {
                                 VerlaufZeile(experiment: experiment, speicher: speicher, cyan: cyan)
                             }
@@ -45,7 +47,7 @@ struct VerlaufView: View {
                 .foregroundColor(.white.opacity(0.2))
             Text("Noch keine abgeschlossenen Experimente")
                 .font(.headline)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
             Text("Starte dein erstes Experiment und stoppe es nach 14 Tagen — dann erscheint es hier.")
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.35))
@@ -58,6 +60,7 @@ struct VerlaufView: View {
 // MARK: - Zeile
 
 struct VerlaufZeile: View {
+    @EnvironmentObject var theme: AppTheme
     var experiment: AbgeschlossenesExperiment
     var speicher: CheckInSpeicher
     var cyan: Color
@@ -95,7 +98,7 @@ struct VerlaufZeile: View {
                 Text(experiment.titel)
                     .font(.subheadline)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .lineLimit(1)
 
                 Text(datumsText)
@@ -110,7 +113,7 @@ struct VerlaufZeile: View {
                     }
                 }
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
                 .labelStyle(.titleAndIcon)
             }
 
@@ -121,11 +124,11 @@ struct VerlaufZeile: View {
                 .font(.caption)
         }
         .padding()
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(14)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .stroke(theme.karte, lineWidth: 1)
         )
     }
 }

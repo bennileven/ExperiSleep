@@ -3,6 +3,7 @@ import SwiftUI
 struct AuswertungView: View {
     var experimentTitel: String
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
     
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
@@ -39,7 +40,7 @@ struct AuswertungView: View {
         let _ = print("Alle Einträge: \(speicher.eintraege.map { $0.experimentTitel })")
         
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
             
             ScrollView {
@@ -54,11 +55,11 @@ struct AuswertungView: View {
                         Text("Auswertung")
                             .font(.title2)
                             .bold()
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                         
                         Text(experimentTitel)
                             .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.secondary)
                     }
                     .padding(.top, 20)
                     
@@ -72,7 +73,7 @@ struct AuswertungView: View {
                     VStack(spacing: 16) {
                         Text("Vergleich mit deinem Ausgangswert")
                             .font(.headline)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         HStack(spacing: 12) {
@@ -99,7 +100,7 @@ struct AuswertungView: View {
                         }
                     }
                     .padding()
-                    .background(Color.white.opacity(0.06))
+                    .background(theme.karte)
                     .cornerRadius(14)
                     .padding(.horizontal)
                     
@@ -107,7 +108,7 @@ struct AuswertungView: View {
                     VStack(spacing: 16) {
                         Text("Woche 1 vs Woche 2")
                             .font(.headline)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         BalkenRow(label: "Dein Ausgangswert", wert: baselineSchlaf, farbe: .gray.opacity(0.6))
@@ -115,7 +116,7 @@ struct AuswertungView: View {
                         BalkenRow(label: "Woche 2 (Experiment)", wert: experimentAvgSchlaf, farbe: .indigo)
                     }
                     .padding()
-                    .background(Color.white.opacity(0.06))
+                    .background(theme.karte)
                     .cornerRadius(14)
                     .padding(.horizontal)
                     
@@ -123,16 +124,16 @@ struct AuswertungView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Fazit")
                             .font(.headline)
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                         
                         Text(fazitText())
                             .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.secondary)
                             .lineSpacing(4)
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white.opacity(0.06))
+                    .background(theme.karte)
                     .cornerRadius(14)
                     .padding(.horizontal)
                     
@@ -184,6 +185,7 @@ struct AuswertungView: View {
 }
 
 struct VergleichsKarte: View {
+    @EnvironmentObject var theme: AppTheme
     var label: String
     var wert: Double
     var farbe: Color
@@ -195,7 +197,7 @@ struct VergleichsKarte: View {
         VStack(spacing: 6) {
             Text(label)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(.secondary)
             
             Text(istVeraenderung ? (positiv ? "+\(String(format: "%.1f", wert))" : "-\(String(format: "%.1f", wert))") : String(format: "%.1f", wert))
                 .font(.system(size: 28, weight: .bold))
@@ -203,11 +205,11 @@ struct VergleichsKarte: View {
             
             Text(beschreibung)
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(12)
     }
 }
@@ -222,18 +224,18 @@ struct BalkenRow: View {
             HStack {
                 Text(label)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.secondary)
                 Spacer()
                 Text(wert == 0 ? "—" : String(format: "%.1f", wert))
                     .font(.subheadline)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
             }
             
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.white.opacity(0.1))
+                        .fill(Color.primary.opacity(0.1))
                         .frame(height: 10)
                     RoundedRectangle(cornerRadius: 6)
                         .fill(farbe)
@@ -248,6 +250,7 @@ struct BalkenRow: View {
 // MARK: - Wissenschaftliche Analyse
 
 struct WissenschaftlicheAnalyseView: View {
+    @EnvironmentObject var theme: AppTheme
     var titel: String
     var hatGeholfen: Bool
     var tageSeitStart: Int
@@ -266,7 +269,7 @@ struct WissenschaftlicheAnalyseView: View {
                     .font(.system(size: 18))
                 Text("Wissenschaftliche Analyse")
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 Spacer()
                 if tageSeitStart >= 14 {
                     Text("Abgeschlossen")
@@ -281,7 +284,7 @@ struct WissenschaftlicheAnalyseView: View {
             .padding()
             .padding(.bottom, 4)
 
-            Divider().background(Color.white.opacity(0.1)).padding(.horizontal)
+            Divider().background(Color.primary.opacity(0.1)).padding(.horizontal)
 
             // Mechanismus
             AnalyseBlock(
@@ -291,7 +294,7 @@ struct WissenschaftlicheAnalyseView: View {
                 text: analyse.mechanismus
             )
 
-            Divider().background(Color.white.opacity(0.08)).padding(.horizontal)
+            Divider().background(theme.karte).padding(.horizontal)
 
             // Personalisierte Auswertung
             AnalyseBlock(
@@ -301,7 +304,7 @@ struct WissenschaftlicheAnalyseView: View {
                 text: hatGeholfen ? analyse.wennErfolgreich : analyse.wennNichtErfolgreich
             )
 
-            Divider().background(Color.white.opacity(0.08)).padding(.horizontal)
+            Divider().background(theme.karte).padding(.horizontal)
 
             // Tipp
             AnalyseBlock(
@@ -311,7 +314,7 @@ struct WissenschaftlicheAnalyseView: View {
                 text: analyse.tipp
             )
         }
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(14)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
@@ -336,11 +339,11 @@ struct AnalyseBlock: View {
                 Text(titel)
                     .font(.subheadline)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
             }
             Text(text)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .lineSpacing(4)
         }
         .padding()
@@ -348,6 +351,7 @@ struct AnalyseBlock: View {
 }
 
 struct StatKarte: View {
+    @EnvironmentObject var theme: AppTheme
     var zahl: String
     var label: String
     var farbe: Color
@@ -359,12 +363,12 @@ struct StatKarte: View {
                 .foregroundColor(farbe)
             Text(label)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.6))
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(12)
     }
 }

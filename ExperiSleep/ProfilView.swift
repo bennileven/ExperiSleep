@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProfilView: View {
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
@@ -37,7 +38,7 @@ struct ProfilView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
             
             ScrollView {
@@ -64,16 +65,16 @@ struct ProfilView: View {
                                 Text(nutzername)
                                     .font(.title2)
                                     .bold()
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.primary)
                                 Image(systemName: "pencil")
                                     .font(.caption)
-                                    .foregroundColor(.white.opacity(0.4))
+                                    .foregroundColor(.secondary)
                             }
                         }
                         
                         Text("ExperiSleep Nutzer")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.secondary)
                     }
                     .padding(.top, 20)
                     
@@ -81,7 +82,7 @@ struct ProfilView: View {
                     VStack(spacing: 12) {
                         Text("Meine Statistiken")
                             .font(.headline)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
                         
@@ -119,18 +120,18 @@ struct ProfilView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("Vergangene Experimente")
                                     .font(.subheadline)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.primary)
                                 Text("\(aktiveExperimente.vergangene.count) abgeschlossen")
                                     .font(.caption2)
                                     .foregroundColor(.white.opacity(0.45))
                             }
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .foregroundColor(.white.opacity(0.3))
+                                .foregroundColor(.secondary)
                                 .font(.caption)
                         }
                         .padding()
-                        .background(Color.white.opacity(0.06))
+                        .background(theme.karte)
                         .cornerRadius(14)
                     }
                     .padding(.horizontal)
@@ -141,14 +142,14 @@ struct ProfilView: View {
                                 .foregroundColor(cyan)
                             Text("Schlaf & Daten Info")
                                 .font(.subheadline)
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .foregroundColor(.white.opacity(0.3))
+                                .foregroundColor(.secondary)
                                 .font(.caption)
                         }
                         .padding()
-                        .background(Color.white.opacity(0.06))
+                        .background(theme.karte)
                         .cornerRadius(14)
                     }
                     .padding(.horizontal)
@@ -157,7 +158,7 @@ struct ProfilView: View {
                     VStack(spacing: 16) {
                         Text("Meine Ausgangswerte")
                             .font(.headline)
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
                         ProfilSlider(
@@ -167,7 +168,7 @@ struct ProfilView: View {
                             wert: $baselineSchlaf
                         )
                         
-                        Divider().background(Color.white.opacity(0.1))
+                        Divider().background(Color.primary.opacity(0.1))
                         
                         ProfilSlider(
                             titel: "Energie morgens",
@@ -176,7 +177,7 @@ struct ProfilView: View {
                             wert: $baselineEnergie
                         )
                         
-                        Divider().background(Color.white.opacity(0.1))
+                        Divider().background(Color.primary.opacity(0.1))
                         
                         ProfilSlider(
                             titel: "Stresslevel",
@@ -186,7 +187,7 @@ struct ProfilView: View {
                         )
                     }
                     .padding()
-                    .background(Color.white.opacity(0.06))
+                    .background(theme.karte)
                     .cornerRadius(14)
                     .padding(.horizontal)
                     
@@ -195,7 +196,7 @@ struct ProfilView: View {
                         VStack(spacing: 12) {
                             Text("Aktive Experimente")
                                 .font(.headline)
-                                .foregroundColor(.white.opacity(0.7))
+                                .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal)
                             
@@ -206,7 +207,7 @@ struct ProfilView: View {
                                         .frame(width: 8, height: 8)
                                     Text(titel)
                                         .font(.subheadline)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                     Spacer()
                                     if let start = aktiveExperimente.startDatum(fuer: titel) {
                                         let tage = Calendar.current.dateComponents([.day], from: start, to: Date()).day ?? 0
@@ -225,6 +226,26 @@ struct ProfilView: View {
                     
                     // ── Einstellungen ──
                     VStack(spacing: 12) {
+                        Toggle(isOn: $theme.istHell) {
+                            HStack(spacing: 12) {
+                                Image(systemName: theme.istHell ? "sun.max.fill" : "moon.fill")
+                                    .foregroundColor(theme.istHell ? .orange : .indigo)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Helles Design")
+                                        .font(.subheadline)
+                                        .foregroundColor(.primary)
+                                    Text(theme.istHell ? "Weißer Hintergrund aktiv" : "Dunkler Hintergrund aktiv")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .tint(cyan)
+                        .padding()
+                        .background(theme.karte)
+                        .cornerRadius(14)
+
                         Toggle(isOn: $mitteilungenAktiv) {
                             HStack(spacing: 12) {
                                 Image(systemName: "bell.fill")
@@ -233,16 +254,16 @@ struct ProfilView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("Erinnerungen")
                                         .font(.subheadline)
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                     Text("12:00 Uhr & 21:00 Uhr (falls kein Check-in)")
                                         .font(.caption2)
-                                        .foregroundColor(.white.opacity(0.45))
+                                        .foregroundColor(.secondary)
                                 }
                             }
                         }
                         .tint(cyan)
                         .padding()
-                        .background(Color.white.opacity(0.06))
+                        .background(theme.karte)
                         .cornerRadius(14)
                         .onChange(of: mitteilungenAktiv) { aktiv in
                             if aktiv {
@@ -265,14 +286,14 @@ struct ProfilView: View {
                                     .foregroundColor(.orange)
                                 Text("Onboarding wiederholen")
                                     .font(.subheadline)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.primary)
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(.secondary)
                                     .font(.caption)
                             }
                             .padding()
-                            .background(Color.white.opacity(0.06))
+                            .background(theme.karte)
                             .cornerRadius(14)
                         }
                         .padding(.horizontal)
@@ -317,6 +338,7 @@ struct ProfilView: View {
 }
 
 struct ProfilKarte: View {
+    @EnvironmentObject var theme: AppTheme
     var titel: String
     var wert: String
     var icon: String
@@ -329,15 +351,15 @@ struct ProfilKarte: View {
                 .font(.system(size: 20))
             Text(wert)
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             Text(titel)
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(12)
     }
 }
@@ -356,11 +378,11 @@ struct ProfilSlider: View {
                 Text(titel)
                     .font(.subheadline)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 Spacer()
                 Text("\(Int(wert)) / 10")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.secondary)
             }
             Slider(value: $wert, in: 1...10, step: 1)
                 .tint(farbe)

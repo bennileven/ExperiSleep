@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ExperimenteListeView: View {
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
+    @EnvironmentObject var theme: AppTheme
     @State private var zeigeErstellen = false
     @State private var eigeneExperimente: [EigenesExperiment] = []
     @State private var aktiveTab = 0
@@ -64,7 +65,7 @@ struct ExperimenteListeView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -127,22 +128,22 @@ struct ExperimenteListeView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(kategorie.name)
                                     .font(.headline)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.primary)
                                 Text("\(kategorie.experimente.count) Experimente")
                                     .font(.caption)
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(.secondary)
                             }
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .foregroundColor(.white.opacity(0.3))
+                                .foregroundColor(.secondary)
                                 .font(.caption)
                         }
                         .padding()
-                        .background(Color.white.opacity(0.06))
+                        .background(theme.karte)
                         .cornerRadius(14)
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
                         )
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -196,7 +197,7 @@ struct ExperimenteListeView: View {
                     Text("Neu")
                 }
                 .font(.headline)
-                .foregroundColor(Color(red: 0.05, green: 0.11, blue: 0.24))
+                .foregroundColor(theme.hintergrund)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 14)
                 .background(cyan)
@@ -216,7 +217,7 @@ struct ExperimenteListeView: View {
                 .foregroundColor(.white.opacity(0.2))
             Text("Noch keine eigenen Experimente")
                 .font(.headline)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
             Text("Erstelle ein eigenes Experiment und teste was deinen Schlaf wirklich beeinflusst.")
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.35))
@@ -257,6 +258,7 @@ struct ExperimenteListeView: View {
 // MARK: - Zeile für eigenes Experiment
 
 struct EigenesExperimentZeile: View {
+    @EnvironmentObject var theme: AppTheme
     var experiment: EigenesExperiment
 
     func farbeVon(name: String) -> Color {
@@ -286,21 +288,21 @@ struct EigenesExperimentZeile: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(experiment.titel)
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 if !experiment.beschreibung.isEmpty {
                     Text(experiment.beschreibung)
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.secondary)
                         .lineLimit(1)
                 }
             }
             Spacer()
             Image(systemName: "chevron.right")
-                .foregroundColor(.white.opacity(0.3))
+                .foregroundColor(.secondary)
                 .font(.caption)
         }
         .padding()
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(14)
         .overlay(
             RoundedRectangle(cornerRadius: 14)

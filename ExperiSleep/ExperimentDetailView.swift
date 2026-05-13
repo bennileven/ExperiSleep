@@ -7,6 +7,7 @@ struct ExperimentDetailView: View {
     
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
     @State private var importiert = false
     @State private var importiertAnzahl = 0
     @State private var zeigeKonfliktAlert = false
@@ -29,7 +30,7 @@ struct ExperimentDetailView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
             
             ScrollView {
@@ -66,7 +67,7 @@ struct ExperimentDetailView: View {
             Text(titel)
                 .font(.title2)
                 .bold()
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .multilineTextAlignment(.center)
             if istAktiv {
                 HStack(spacing: 6) {
@@ -93,7 +94,7 @@ struct ExperimentDetailView: View {
             InfoRow(icon: "chart.bar.fill", text: "Nach 14 Tagen siehst du ob das Experiment geholfen hat")
         }
         .padding()
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(14)
         .padding(.horizontal)
     }
@@ -118,7 +119,7 @@ struct ExperimentDetailView: View {
                 Text(istAktiv ? "Experiment stoppen" : "Experiment starten")
                     .font(.headline)
             }
-            .foregroundColor(.white)
+            .foregroundColor(.primary)
             .frame(maxWidth: .infinity)
             .padding()
             .background(istAktiv ? Color.red.opacity(0.7) : color)
@@ -143,7 +144,7 @@ struct ExperimentDetailView: View {
                     .foregroundColor(importiert ? .green : .red)
                 Text(importiert ? "\(importiertAnzahl) Nächte importiert ✓" : "Schlafdaten der letzten 4 Nächte importieren")
                     .font(.subheadline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
             }
             .frame(maxWidth: .infinity)
             .padding()
@@ -165,11 +166,11 @@ struct ExperimentDetailView: View {
                     .foregroundColor(.purple)
                 Text(demoAktiv ? "Demo Modus deaktivieren" : "Demo Modus aktivieren")
                     .font(.subheadline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 Spacer()
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(demoAktiv ? Color.purple : Color.white.opacity(0.2))
+                        .fill(demoAktiv ? Color.purple : Color.primary.opacity(0.15))
                         .frame(width: 44, height: 26)
                     Circle()
                         .fill(.white)
@@ -198,14 +199,14 @@ struct ExperimentDetailView: View {
                 Text("Auswertung ansehen")
                     .font(.headline)
             }
-            .foregroundColor(.white)
+            .foregroundColor(.primary)
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color.white.opacity(0.08))
+            .background(theme.karte)
             .cornerRadius(14)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 1)
             )
         }
         .padding(.horizontal)
@@ -223,7 +224,7 @@ struct InfoRow: View {
                 .foregroundColor(.cyan)
             Text(text)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
         }
     }
 }

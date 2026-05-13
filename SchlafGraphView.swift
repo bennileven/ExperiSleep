@@ -4,6 +4,7 @@ struct SchlafGraphView: View {
     var eintraege: [CheckInEintrag]
     var baselineWert: Double
 
+    @EnvironmentObject var theme: AppTheme
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
     @State private var aktiveAnsicht = 0
 
@@ -17,7 +18,7 @@ struct SchlafGraphView: View {
             HStack {
                 Text("Schlafverlauf")
                     .font(.headline)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.secondary)
                 Spacer()
                 HStack(spacing: 5) {
                     ForEach(0..<2) { i in
@@ -32,7 +33,7 @@ struct SchlafGraphView: View {
             if sortiertEintraege.isEmpty {
                 Text("Noch keine Daten vorhanden")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
             } else {
@@ -63,13 +64,13 @@ struct SchlafGraphView: View {
                         .foregroundColor(besserAlsBaseline > sortiertEintraege.count / 2 ? .green : .red)
                     Text("\(besserAlsBaseline) von \(sortiertEintraege.count) Nächten besser als dein Ausgangswert")
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(.secondary)
                 }
                 .padding(.top, 4)
             }
         }
         .padding()
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(14)
         .padding(.horizontal)
     }
@@ -78,6 +79,7 @@ struct SchlafGraphView: View {
 // MARK: - Balkendiagramm
 
 struct BalkenAnsicht: View {
+    @EnvironmentObject var theme: AppTheme
     var eintraege: [CheckInEintrag]
     var baselineWert: Double
     var cyan: Color
@@ -102,10 +104,10 @@ struct BalkenAnsicht: View {
                             p.move(to: CGPoint(x: 30, y: y))
                             p.addLine(to: CGPoint(x: geo.size.width, y: y))
                         }
-                        .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
                         Text("\(wert)")
                             .font(.system(size: 9))
-                            .foregroundColor(.white.opacity(0.3))
+                            .foregroundColor(.secondary)
                             .position(x: 14, y: y)
                     }
 
@@ -131,13 +133,13 @@ struct BalkenAnsicht: View {
 
                         Text("\(eintrag.schlafqualitaet)")
                             .font(.system(size: 8))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.secondary)
                             .position(x: x + balkenBreite / 2, y: y - 8)
 
                         if index % 2 == 0 {
                             Text(kurzesDatum(eintrag.datum))
                                 .font(.system(size: 8))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(.secondary)
                                 .position(x: x + balkenBreite / 2, y: maxHoehe + 16)
                         }
                     }
@@ -176,6 +178,7 @@ struct KurvenAnsicht: View {
 }
 
 struct KurvenZeichnung: View {
+    @EnvironmentObject var theme: AppTheme
     var eintraege: [CheckInEintrag]
     var baselineWert: Double
     var cyan: Color
@@ -202,10 +205,10 @@ struct KurvenZeichnung: View {
                     p.move(to: CGPoint(x: linksOffset, y: y))
                     p.addLine(to: CGPoint(x: groesse.width, y: y))
                 }
-                .stroke(Color.white.opacity(0.08), lineWidth: 0.5)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
                 Text("\(wert)")
                     .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundColor(.secondary)
                     .position(x: 14, y: y)
             }
 
@@ -264,7 +267,7 @@ struct KurvenZeichnung: View {
                 if index % 2 == 0 {
                     Text(kurzesDatum(eintrag.datum))
                         .font(.system(size: 8))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(.secondary)
                         .position(x: pt.x, y: maxHoehe + 16)
                 }
             }
@@ -288,7 +291,7 @@ struct LegendeItem: View {
             } else {
                 Rectangle().fill(farbe).frame(width: 12, height: 2)
             }
-            Text(label).font(.caption).foregroundColor(.white.opacity(0.6))
+            Text(label).font(.caption).foregroundColor(.secondary)
         }
     }
 }
@@ -303,5 +306,6 @@ private func kurzesDatum(_ datum: Date) -> String {
     ZStack {
         Color(red: 0.05, green: 0.11, blue: 0.24).ignoresSafeArea()
         SchlafGraphView(eintraege: [], baselineWert: 5.0)
+            .environmentObject(AppTheme())
     }
 }

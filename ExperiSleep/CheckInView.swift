@@ -6,6 +6,7 @@ struct CheckInView: View {
     var istBaseline: Bool = true
     
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
     @State private var schlafqualitaet: Double = 5
     @State private var energie: Double = 5
     @State private var stress: Double = 5
@@ -16,7 +17,7 @@ struct CheckInView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
             
             VStack(spacing: 25) {
@@ -24,20 +25,20 @@ struct CheckInView: View {
                 Text("Morgen Check-in")
                     .font(.title2)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .padding(.top, 20)
                 
                 Text(istBaseline ? "Woche 1 — Baseline" : "Woche 2 — Experiment")
                     .font(.caption)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(istBaseline ? Color.white.opacity(0.1) : Color.indigo.opacity(0.3))
-                    .foregroundColor(.white)
+                    .background(istBaseline ? Color.primary.opacity(0.1) : Color.indigo.opacity(0.3))
+                    .foregroundColor(.primary)
                     .cornerRadius(20)
                 
                 Text(experimentTitel)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.secondary)
                 
                 if schlafStunden > 0 {
                     HStack(spacing: 8) {
@@ -56,7 +57,7 @@ struct CheckInView: View {
                             .tint(.white)
                         Text("Schlafdaten werden geladen...")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.secondary)
                     }
                 } else {
                     HStack {
@@ -65,7 +66,7 @@ struct CheckInView: View {
                             .font(.caption)
                         Text("Keine Schlafdaten — bitte manuell eingeben")
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.secondary)
                         Spacer()
                     }
                     .padding(.horizontal)
@@ -80,7 +81,7 @@ struct CheckInView: View {
                     )
                     
                     Divider()
-                        .background(Color.white.opacity(0.2))
+                        .background(Color.primary.opacity(0.15))
                     
                     SliderRow(
                         titel: "Energie heute",
@@ -90,7 +91,7 @@ struct CheckInView: View {
                     )
                     
                     Divider()
-                        .background(Color.white.opacity(0.2))
+                        .background(Color.primary.opacity(0.15))
                     
                     SliderRow(
                         titel: "Stresslevel",
@@ -100,7 +101,7 @@ struct CheckInView: View {
                     )
                 }
                 .padding()
-                .background(Color.white.opacity(0.06))
+                .background(theme.karte)
                 .cornerRadius(14)
                 .padding(.horizontal)
                 
@@ -127,7 +128,7 @@ struct CheckInView: View {
                 }) {
                     Text(gespeichert ? "Gespeichert ✓" : "Check-in speichern")
                         .font(.headline)
-                        .foregroundColor(gespeichert ? .white : Color(red: 0.05, green: 0.11, blue: 0.24))
+                        .foregroundColor(gespeichert ? .white : theme.hintergrund)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(gespeichert ? Color.green : Color(red: 0.0, green: 0.90, blue: 0.80))
@@ -178,11 +179,11 @@ struct SliderRow: View {
                 Text(titel)
                     .font(.subheadline)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                 Spacer()
                 Text("\(Int(wert)) / 10")
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.secondary)
             }
             Slider(value: $wert, in: 1...10, step: 1)
                 .tint(color)

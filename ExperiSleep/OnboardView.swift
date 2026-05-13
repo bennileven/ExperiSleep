@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
+    @EnvironmentObject var theme: AppTheme
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
     @AppStorage("baselineStress") var baselineStress = 5.0
@@ -10,7 +11,7 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            Color(red: 0.05, green: 0.11, blue: 0.24)
+            theme.hintergrund
                 .ignoresSafeArea()
 
             GlassEffectContainer {
@@ -22,7 +23,7 @@ struct OnboardingView: View {
                         withAnimation { schritt -= 1 }
                     }) {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                             .padding(8)
                             .glassEffect(in: Circle())
                     }
@@ -32,7 +33,7 @@ struct OnboardingView: View {
                     HStack(spacing: 8) {
                         ForEach(0..<3) { i in
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(i <= schritt ? cyan : Color.white.opacity(0.2))
+                                .fill(i <= schritt ? cyan : Color.primary.opacity(0.15))
                                 .frame(height: 4)
                         }
                     }
@@ -79,7 +80,7 @@ struct OnboardingView: View {
                 }) {
                     Text(schritt == 0 ? "Loslegen" : schritt == 2 ? "Fertig" : "Weiter")
                         .font(.headline)
-                        .foregroundColor(Color(red: 0.05, green: 0.11, blue: 0.24))
+                        .foregroundColor(theme.hintergrund)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(cyan)
@@ -107,12 +108,12 @@ struct WillkommensSchritt: View {
             Text("Willkommen bei ExperiSleep")
                 .font(.title2)
                 .bold()
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .multilineTextAlignment(.center)
             
             Text("Finde in 2 Wochen heraus was deinen Schlaf wirklich verbessert — mit persönlichen Experimenten und echten Daten.")
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
@@ -148,12 +149,12 @@ struct FrageSchritt: View {
                 Text(frage)
                     .font(.title2)
                     .bold()
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                 
                 Text(beschreibung)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.secondary)
             }
             .padding(.horizontal)
             
@@ -169,11 +170,11 @@ struct FrageSchritt: View {
                 HStack {
                     Text(linksLabel)
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.secondary)
                     Spacer()
                     Text(rechtsLabel)
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.secondary)
                 }
                 .padding(.horizontal)
             }
@@ -195,7 +196,7 @@ struct OnboardingInfoRow: View {
                 .foregroundColor(color)
             Text(text)
                 .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(.primary.opacity(0.8))
         }
     }
 }

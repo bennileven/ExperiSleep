@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var zeigeCheckIn = false
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @EnvironmentObject private var speicher: CheckInSpeicher
+    @EnvironmentObject var theme: AppTheme
     
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
@@ -83,7 +84,7 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(red: 0.05, green: 0.11, blue: 0.24)
+                theme.hintergrund
                     .ignoresSafeArea()
                 
                 ScrollView {
@@ -94,12 +95,12 @@ struct ContentView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Guten Morgen 👋")
                                     .font(.subheadline)
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .foregroundColor(.secondary)
                                 HStack(spacing: 0) {
                                     Text("Experi")
                                         .font(.title)
                                         .bold()
-                                        .foregroundColor(.white)
+                                        .foregroundColor(.primary)
                                     Text("Sleep")
                                         .font(.title)
                                         .bold()
@@ -113,7 +114,7 @@ struct ContentView: View {
                             ) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color.white.opacity(0.08))
+                                        .fill(theme.karte)
                                         .frame(width: 44, height: 44)
                                     Image(systemName: "person.fill")
                                         .foregroundColor(cyan)
@@ -133,11 +134,11 @@ struct ContentView: View {
                                         .foregroundColor(streak >= 7 ? .orange : cyan)
                                     Text("Tage Streak")
                                         .font(.caption)
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(.secondary)
                                 }
                                 
                                 Divider()
-                                    .background(Color.white.opacity(0.2))
+                                    .background(Color.primary.opacity(0.15))
                                     .frame(height: 50)
                                 
                                 VStack(spacing: 4) {
@@ -145,7 +146,7 @@ struct ContentView: View {
                                         .font(.system(size: 36))
                                     Text(streak >= 7 ? "On fire!" : streak >= 3 ? "Guter Start" : "Fang an!")
                                         .font(.caption)
-                                        .foregroundColor(.white.opacity(0.6))
+                                        .foregroundColor(.secondary)
                                 }
                                 
                                 Spacer()
@@ -154,7 +155,7 @@ struct ContentView: View {
                                     ForEach(0..<7) { tag in
                                         let hatEintrag = hatEintragFuerTag(tag: tag)
                                         Circle()
-                                            .fill(hatEintrag ? cyan : Color.white.opacity(0.15))
+                                            .fill(hatEintrag ? cyan : Color.primary.opacity(0.1))
                                             .frame(width: 10, height: 10)
                                     }
                                 }
@@ -179,15 +180,15 @@ struct ContentView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(heuteCheckInGemacht ? "Check-in erledigt ✓" : "Täglicher Check-in")
                                             .font(.headline)
-                                            .foregroundColor(heuteCheckInGemacht ? .green : Color(red: 0.05, green: 0.11, blue: 0.24))
+                                            .foregroundColor(heuteCheckInGemacht ? .green : theme.hintergrund)
                                         Text(heuteCheckInGemacht ? "Morgen wieder!" : aktiveExperimente.aktive.isEmpty ? "Starte zuerst ein Experiment" : "Für: \(aktivesExperiment)")
                                             .font(.caption)
-                                            .foregroundColor(heuteCheckInGemacht ? .green.opacity(0.8) : Color(red: 0.05, green: 0.11, blue: 0.24).opacity(0.7))
+                                            .foregroundColor(heuteCheckInGemacht ? .green.opacity(0.8) : theme.hintergrund.opacity(0.7))
                                     }
                                     Spacer()
                                     Image(systemName: heuteCheckInGemacht ? "checkmark.circle.fill" : "moon.fill")
                                         .font(.title2)
-                                        .foregroundColor(heuteCheckInGemacht ? .green : Color(red: 0.05, green: 0.11, blue: 0.24))
+                                        .foregroundColor(heuteCheckInGemacht ? .green : theme.hintergrund)
                                 }
                                 .padding()
                                 .background(heuteCheckInGemacht ? Color.green.opacity(0.15) : cyan)
@@ -197,7 +198,7 @@ struct ContentView: View {
                             .disabled(heuteCheckInGemacht || aktiveExperimente.aktive.isEmpty)
                         }
                         .padding(.vertical)
-                        .background(Color.white.opacity(0.06))
+                        .background(theme.karte)
                         .cornerRadius(20)
                         .padding(.horizontal)
                         
@@ -206,7 +207,7 @@ struct ContentView: View {
                             HStack {
                                 Text("Mein Schlaf")
                                     .font(.headline)
-                                    .foregroundColor(.white.opacity(0.7))
+                                    .foregroundColor(.secondary)
                                 
                                 if demoModus {
                                     Text("Demo")
@@ -222,7 +223,7 @@ struct ContentView: View {
                                 if !aktiveExperimente.aktive.isEmpty {
                                     NavigationLink(destination: AuswertungView(
                                         experimentTitel: aktivesExperiment
-                                    ).environmentObject(speicher)) {
+                                    ).environmentObject(speicher).environmentObject(theme)) {
                                         Text("Details")
                                             .font(.caption)
                                             .foregroundColor(cyan)
@@ -264,14 +265,14 @@ struct ContentView: View {
                             } else {
                                 HStack {
                                     Image(systemName: "chart.bar.fill")
-                                        .foregroundColor(.white.opacity(0.3))
+                                        .foregroundColor(.secondary)
                                     Text("Noch keine Daten — mache deinen ersten Check-in!")
                                         .font(.caption)
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .foregroundColor(.secondary)
                                 }
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(Color.white.opacity(0.04))
+                                .background(Color.primary.opacity(0.04))
                                 .cornerRadius(14)
                                 .padding(.horizontal)
                             }
@@ -286,7 +287,7 @@ struct ContentView: View {
                                         .frame(width: 8, height: 8)
                                     Text("Laufende Experimente")
                                         .font(.headline)
-                                        .foregroundColor(.white.opacity(0.7))
+                                        .foregroundColor(.secondary)
                                     Spacer()
                                     Text("\(aktiveExperimente.aktive.count) aktiv")
                                         .font(.caption)
@@ -307,7 +308,7 @@ struct ContentView: View {
                                             VStack(alignment: .leading, spacing: 2) {
                                                 Text(titel)
                                                     .font(.body)
-                                                    .foregroundColor(.white)
+                                                    .foregroundColor(.primary)
                                                 if let start = aktiveExperimente.startDatum(fuer: titel) {
                                                     let tage = Calendar.current.dateComponents([.day], from: start, to: Date()).day ?? 0
                                                     Text("Tag \(tage + 1) von 14")
@@ -320,7 +321,7 @@ struct ContentView: View {
                                                 .fill(Color.green)
                                                 .frame(width: 8, height: 8)
                                             Image(systemName: "chevron.right")
-                                                .foregroundColor(.white.opacity(0.3))
+                                                .foregroundColor(.secondary)
                                                 .font(.caption)
                                         }
                                         .padding()
@@ -347,7 +348,7 @@ struct ContentView: View {
                                     .foregroundColor(cyan)
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(.secondary)
                                     .font(.caption)
                             }
                             .padding()
@@ -377,6 +378,7 @@ struct ContentView: View {
             .sheet(isPresented: $zeigeCheckIn) {
                 CheckInView(experimentTitel: aktivesExperiment)
                     .environmentObject(speicher)
+                    .environmentObject(theme)
             }
             .sheet(item: $aktiveExperimente.neuAbgeschlossen) { experiment in
                 ExperimentAbschlussView(experiment: experiment)
@@ -396,6 +398,7 @@ struct ContentView: View {
 }
 
 struct DashboardKarte: View {
+    @EnvironmentObject var theme: AppTheme
     var titel: String
     var wert: String
     var einheit: String
@@ -409,23 +412,24 @@ struct DashboardKarte: View {
                 .font(.system(size: 20))
             Text(wert)
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             Text(einheit)
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
             Text(titel)
                 .font(.caption2)
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(Color.white.opacity(0.06))
+        .background(theme.karte)
         .cornerRadius(12)
     }
 }
 
 struct DunklesExperimentButton: View {
+    @EnvironmentObject var theme: AppTheme
     var title: String
     var icon: String
     var color: Color
@@ -437,18 +441,18 @@ struct DunklesExperimentButton: View {
                 .frame(width: 30)
             Text(title)
                 .font(.body)
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
             Spacer()
             Image(systemName: "chevron.right")
-                .foregroundColor(.white.opacity(0.3))
+                .foregroundColor(.secondary)
                 .font(.caption)
         }
         .padding()
-        .background(Color.white.opacity(0.08))
+        .background(theme.karte)
         .cornerRadius(14)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
         )
     }
 }
