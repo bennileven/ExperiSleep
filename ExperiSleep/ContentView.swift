@@ -62,7 +62,11 @@ struct ContentView: View {
     
     var graphEintraege: [CheckInEintrag] {
         if demoModus { return demoDaten() }
-        return Array(speicher.eintraege.sorted { $0.datum < $1.datum }.suffix(14))
+        let sortiert = speicher.eintraege.sorted { $0.datum < $1.datum }
+        if let start = aktiveExperimente.aktive.first?.startDatum {
+            return sortiert.filter { $0.datum >= start }
+        }
+        return Array(sortiert.suffix(14))
     }
     
     func demoDaten() -> [CheckInEintrag] {

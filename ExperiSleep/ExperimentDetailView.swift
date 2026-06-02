@@ -11,6 +11,8 @@ struct ExperimentDetailView: View {
     @State private var importiert = false
     @State private var importiertAnzahl = 0
     @State private var zeigeKonfliktAlert = false
+    @State private var baselineGeladen = false
+    @State private var healthKitLaedt = false
     @AppStorage("demoModus") var demoAktiv = false
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     
@@ -38,6 +40,9 @@ struct ExperimentDetailView: View {
                     iconTitelBereich
                     erklaerungBereich
                     VStack(spacing: 12) {
+                        if !istAktiv && speicher.eintraege.isEmpty {
+                            baselineAusHealthKitButton
+                        }
                         startenStoppenButton
                         if istAktiv {
                             healthImportButton
@@ -110,10 +115,12 @@ struct ExperimentDetailView: View {
             } else {
                 HapticManager.impact(.heavy)
                 aktiveExperimente.starten(titel: titel)
-                HealthKitManager.shared.berechtigungAnfragen { _ in
-                    HealthKitManager.shared.schlafdurchschnittLetzteNaechte(anzahl: 14) { durchschnitt in
-                        if let wert = durchschnitt { baselineSchlaf = wert }
-                    }
+                let letzten14 = speicher.eintraege
+                    .sorted { $0.datum > $1.datum }
+                    .prefix(14)
+                if !letzten14.isEmpty {
+                    let summe = letzten14.reduce(0) { $0 + $1.schlafqualitaet }
+                    baselineSchlaf = Double(summe) / Double(letzten14.count)
                 }
             }
         }) {
@@ -131,6 +138,51 @@ struct ExperimentDetailView: View {
         .padding(.horizontal)
     }
     
+    var baselineAusHealthKitButton: some View {
+        Button(action: {
+            healthKitLaedt = true
+            HealthKitManager.shared.berechtigungAnfragen { _ in
+                HealthKitManager.shared.schlafdurchschnittLetzteNaechte(anzahl: 14) { durchschnitt in
+                    healthKitLaedt = false
+                    if let wert = durchschnitt {
+                        baselineSchlaf = wert
+                        baselineGeladen = true
+                    }
+                }
+            }
+        }) {
+            HStack(spacing: 12) {
+                if healthKitLaedt {
+                    ProgressView().tint(.indigo)
+                } else {
+                    Image(systemName: baselineGeladen ? "checkmark.circle.fill" : "heart.fill")
+                        .foregroundColor(baselineGeladen ? .green : .indigo)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(baselineGeladen ? "Ausgangswert geladen ✓" : "Ausgangswert aus Apple Health laden")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                    Text(baselineGeladen
+                        ? "Ø \(String(format: "%.1f", baselineSchlaf)) · letzte 14 Nächte"
+                        : "Letzte 14 Nächte als Ausgangswert verwenden")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(baselineGeladen ? Color.green.opacity(0.12) : Color.indigo.opacity(0.12))
+            .cornerRadius(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(baselineGeladen ? Color.green.opacity(0.3) : Color.indigo.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .padding(.horizontal)
+        .disabled(baselineGeladen || healthKitLaedt)
+    }
+
     var healthImportButton: some View {
         Button(action: {
             HealthKitManager.shared.vergangeneNaechteImportieren(

@@ -313,6 +313,39 @@ struct WissenschaftlicheAnalyseView: View {
                 titel: "Tipp für die Zukunft",
                 text: analyse.tipp
             )
+
+            // Quellen
+            if !analyse.quellen.isEmpty {
+                Divider().background(theme.karte).padding(.horizontal)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "book.closed.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                        Text("Wissenschaftliche Quellen")
+                            .font(.caption)
+                            .bold()
+                            .foregroundColor(.secondary)
+                    }
+                    ForEach(analyse.quellen, id: \.titel) { quelle in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(quelle.autor) (\(quelle.jahr))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fontWeight(.semibold)
+                            Text("\u{201E}\(quelle.titel)\u{201C}")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(quelle.zeitschrift)
+                                .font(.caption2)
+                                .foregroundColor(.secondary.opacity(0.7))
+                                .italic()
+                        }
+                        .padding(.top, 2)
+                    }
+                }
+                .padding()
+            }
         }
         .background(theme.karte)
         .cornerRadius(14)

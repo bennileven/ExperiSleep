@@ -73,14 +73,14 @@ class HealthKitManager: ObservableObject {
                 return
             }
 
-            // Dauer-Basispunkte (1–6)
+            // Dauer-Basispunkte (1–7)
             let dauerScore: Int
             if stunden < 4      { dauerScore = 1 }
             else if stunden < 5 { dauerScore = 2 }
             else if stunden < 6 { dauerScore = 3 }
-            else if stunden < 7 { dauerScore = 4 }
-            else if stunden < 9 { dauerScore = 6 }
-            else                { dauerScore = 5 }
+            else if stunden < 7 { dauerScore = 5 }
+            else if stunden < 9 { dauerScore = 7 }
+            else                { dauerScore = 6 }
 
             var score: Int
 
@@ -91,11 +91,11 @@ class HealthKitManager: ObservableObject {
 
                 // Tiefschlaf-Bonus/Abzug (-1 bis +2)
                 let tiefBonus: Int
-                if tiefAnteil >= 0.20 && tiefAnteil <= 0.30 {
+                if tiefAnteil >= 0.17 && tiefAnteil <= 0.33 {
                     tiefBonus = 2
-                } else if (tiefAnteil >= 0.16 && tiefAnteil < 0.20) || (tiefAnteil > 0.30 && tiefAnteil <= 0.33) {
+                } else if (tiefAnteil >= 0.12 && tiefAnteil < 0.17) || (tiefAnteil > 0.33 && tiefAnteil <= 0.38) {
                     tiefBonus = 1
-                } else if tiefAnteil < 0.10 {
+                } else if tiefAnteil < 0.08 {
                     tiefBonus = -1
                 } else {
                     tiefBonus = 0
@@ -103,18 +103,18 @@ class HealthKitManager: ObservableObject {
 
                 // REM-Bonus/Abzug (-1 bis +2)
                 let remBonus: Int
-                if remAnteil >= 0.21 && remAnteil <= 0.31 {
+                if remAnteil >= 0.18 && remAnteil <= 0.34 {
                     remBonus = 2
-                } else if (remAnteil >= 0.15 && remAnteil < 0.21) || (remAnteil > 0.31 && remAnteil <= 0.35) {
+                } else if (remAnteil >= 0.12 && remAnteil < 0.18) || (remAnteil > 0.34 && remAnteil <= 0.40) {
                     remBonus = 1
-                } else if remAnteil < 0.10 {
+                } else if remAnteil < 0.08 {
                     remBonus = -1
                 } else {
                     remBonus = 0
                 }
 
                 // Wachphasen-Abzug (0 oder -1)
-                let wachAbzug = wachAnteil > 0.15 ? -1 : 0
+                let wachAbzug = wachAnteil > 0.20 ? -1 : 0
 
                 score = dauerScore + tiefBonus + remBonus + wachAbzug
             } else {

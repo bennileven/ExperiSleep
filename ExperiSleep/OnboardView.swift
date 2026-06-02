@@ -5,6 +5,7 @@ struct OnboardingView: View {
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
     @AppStorage("baselineStress") var baselineStress = 5.0
+    @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     @AppStorage("nutzername") var nutzername = ""
 
     @State private var schritt = 0
@@ -37,7 +38,7 @@ struct OnboardingView: View {
                     .disabled(schritt == 0)
 
                     HStack(spacing: 8) {
-                        ForEach(0..<4) { i in
+                        ForEach(0..<5) { i in
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(i <= schritt ? cyan : Color.primary.opacity(0.15))
                                 .frame(height: 4)
@@ -74,6 +75,16 @@ struct OnboardingView: View {
                         rechtsLabel: "Sehr gestresst",
                         wert: $baselineStress
                     )
+                } else if schritt == 4 {
+                    FrageSchritt(
+                        frage: "Wie ist deine Schlafqualität?",
+                        beschreibung: "Wie gut schläfst du aktuell?",
+                        icon: "moon.fill",
+                        color: .indigo,
+                        linksLabel: "Sehr schlecht",
+                        rechtsLabel: "Sehr gut",
+                        wert: $baselineSchlaf
+                    )
                 }
                 
                 Spacer()
@@ -84,7 +95,7 @@ struct OnboardingView: View {
                         nutzername = nameEingabe.trimmingCharacters(in: .whitespaces)
                         HapticManager.impact()
                         withAnimation { schritt += 1 }
-                    } else if schritt < 3 {
+                    } else if schritt < 4 {
                         HapticManager.soft()
                         withAnimation { schritt += 1 }
                     } else {
@@ -92,7 +103,7 @@ struct OnboardingView: View {
                         onboardingAbgeschlossen = true
                     }
                 }) {
-                    Text(schritt == 0 ? "Loslegen" : schritt == 3 ? "Fertig" : "Weiter")
+                    Text(schritt == 0 ? "Loslegen" : schritt == 4 ? "Fertig" : "Weiter")
                         .font(.headline)
                         .foregroundColor(weiterDeaktiviert ? .secondary : theme.hintergrund)
                         .frame(maxWidth: .infinity)
@@ -134,7 +145,7 @@ struct WillkommensSchritt: View {
                 .padding(.horizontal)
             
             VStack(alignment: .leading, spacing: 14) {
-                OnboardingInfoRow(icon: "1.circle.fill", text: "Beantworte 3 kurze Fragen zu deinem Schlaf", color: cyan)
+                OnboardingInfoRow(icon: "1.circle.fill", text: "Beantworte 4 kurze Fragen zu deinem Schlaf", color: cyan)
                 OnboardingInfoRow(icon: "2.circle.fill", text: "Starte ein Experiment das dich interessiert", color: cyan)
                 OnboardingInfoRow(icon: "3.circle.fill", text: "Mache täglich einen kurzen Check-in", color: cyan)
                 OnboardingInfoRow(icon: "chart.bar.fill", text: "Sieh nach 2 Wochen ob es geholfen hat", color: cyan)
