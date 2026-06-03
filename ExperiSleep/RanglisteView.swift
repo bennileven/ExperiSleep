@@ -2,7 +2,8 @@ import SwiftUI
 
 struct RanglisteView: View {
     @EnvironmentObject var theme: AppTheme
-    @AppStorage("nutzername") var nutzername = "Schläfer"
+    @AppStorage("nutzername") var nutzername = ""
+    @AppStorage("oeffentlichInRangliste") var oeffentlichInRangliste = false
     @StateObject private var punkte = PunkteManager.shared
 
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
@@ -22,6 +23,13 @@ struct RanglisteView: View {
                     EigeneStatsKarte(punkte: punkte.punkte, rang: eigenerRang, cyan: cyan)
                         .padding(.horizontal)
                         .padding(.top, 8)
+
+                    // ── Datenschutz ──
+                    DatenschutzKarte(oeffentlich: $oeffentlichInRangliste, cyan: cyan) {
+                        PunkteManager.shared.sync()
+                        laden()
+                    }
+                    .padding(.horizontal)
 
                     // ── Punkteerklärung ──
                     PunkteErklarung(cyan: cyan)
@@ -86,6 +94,48 @@ struct RanglisteView: View {
             laedt = false
             eigenerRang = ergebnis.firstIndex(where: { $0.id == FirebaseManager.shared.nutzerID }).map { $0 + 1 }
         }
+    }
+}
+
+// MARK: - Datenschutz
+
+struct DatenschutzKarte: View {
+    @Binding var oeffentlich: Bool
+    var cyan: Color
+    var onChange: () -> Void
+    @EnvironmentObject var theme: AppTheme
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: oeffentlich ? "globe" : "lock.fill")
+                .font(.system(size: 22))
+                .foregroundColor(oeffentlich ? cyan : .secondary)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(oeffentlich ? "Profil öffentlich" : "Profil privat")
+                    .font(.subheadline)
+                    .bold()
+                    .foregroundColor(.primary)
+                Text(oeffentlich ? "Du erscheinst in der Community-Rangliste" : "Nur du siehst deine Stats — niemand sonst")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: $oeffentlich)
+                .labelsHidden()
+                .tint(cyan)
+                .onChange(of: oeffentlich) { _ in onChange() }
+        }
+        .padding()
+        .background(theme.karte)
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(oeffentlich ? cyan.opacity(0.3) : Color.primary.opacity(0.08), lineWidth: 1)
+        )
     }
 }
 

@@ -16,14 +16,18 @@ struct ContentView: View {
     var aktivesExperiment: String {
         aktiveExperimente.aktiveNamen.first ?? "Allgemein"
     }
-    
+
+    let demoExperimentTitel = "Kein Koffein nach 14 Uhr"
+
     var heuteCheckInGemacht: Bool {
         let heute = Calendar.current.startOfDay(for: Date())
         return speicher.eintraege.contains {
             Calendar.current.startOfDay(for: $0.datum) == heute
         }
     }
-    
+
+    var angezeigterCheckIn: Bool { demoModus ? true : heuteCheckInGemacht }
+
     var streak: Int {
         var count = 0
         var pruefdatum = Calendar.current.startOfDay(for: Date())
@@ -37,6 +41,8 @@ struct ContentView: View {
         }
         return count
     }
+
+    var angezeigterStreak: Int { demoModus ? 14 : streak }
     
     var durchschnittSchlafLetzte7Tage: Double {
         let eintraege = demoModus ? demoDaten() : speicher.eintraege
@@ -46,15 +52,17 @@ struct ContentView: View {
         return Double(relevant.reduce(0) { $0 + $1.schlafqualitaet }) / Double(relevant.count)
     }
     
+    var effektiverBaselineWert: Double { demoModus ? 5.0 : baselineSchlaf }
+
     var trendPfeil: String {
-        let diff = durchschnittSchlafLetzte7Tage - baselineSchlaf
+        let diff = durchschnittSchlafLetzte7Tage - effektiverBaselineWert
         if diff > 0.5 { return "arrow.up.circle.fill" }
         if diff < -0.5 { return "arrow.down.circle.fill" }
         return "minus.circle.fill"
     }
-    
+
     var trendFarbe: Color {
-        let diff = durchschnittSchlafLetzte7Tage - baselineSchlaf
+        let diff = durchschnittSchlafLetzte7Tage - effektiverBaselineWert
         if diff > 0.5 { return .green }
         if diff < -0.5 { return .red }
         return .orange
@@ -70,7 +78,7 @@ struct ContentView: View {
     }
     
     func demoDaten() -> [CheckInEintrag] {
-        let schlafWerte = [5, 4, 6, 5, 4, 5, 7, 8, 7, 8, 9, 8, 9, 8]
+        let schlafWerte = [4, 3, 6, 7, 7, 8, 8, 7, 8, 8, 9, 9, 8, 9]
         let energieWerte = [5, 5, 5, 6, 4, 5, 6, 7, 7, 8, 7, 8, 8, 7]
         let stressWerte = [6, 7, 5, 6, 7, 6, 4, 3, 4, 3, 3, 2, 3, 3]
         guard let basisDatum = Calendar.current.date(byAdding: .day, value: -13, to: Date()) else { return [] }
@@ -149,31 +157,31 @@ struct ContentView: View {
                         VStack(spacing: 16) {
                             HStack(spacing: 20) {
                                 VStack(spacing: 4) {
-                                    Text("\(streak)")
+                                    Text("\(angezeigterStreak)")
                                         .font(.system(size: 40, weight: .bold))
-                                        .foregroundColor(streak >= 7 ? .orange : cyan)
+                                        .foregroundColor(angezeigterStreak >= 7 ? .orange : cyan)
                                     Text("Tage Streak")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 Divider()
                                     .background(Color.primary.opacity(0.15))
                                     .frame(height: 50)
-                                
+
                                 VStack(spacing: 4) {
-                                    Text(streak >= 7 ? "🔥" : streak >= 3 ? "🌱" : "😴")
+                                    Text(angezeigterStreak >= 7 ? "🔥" : angezeigterStreak >= 3 ? "🌱" : "😴")
                                         .font(.system(size: 36))
-                                    Text(streak >= 7 ? "On fire!" : streak >= 3 ? "Guter Start" : "Fang an!")
+                                    Text(angezeigterStreak >= 7 ? "On fire!" : angezeigterStreak >= 3 ? "Guter Start" : "Fang an!")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 Spacer()
-                                
+
                                 HStack(spacing: 6) {
                                     ForEach(0..<7) { tag in
-                                        let hatEintrag = hatEintragFuerTag(tag: tag)
+                                        let hatEintrag = demoModus ? true : hatEintragFuerTag(tag: tag)
                                         Circle()
                                             .fill(hatEintrag ? cyan : Color.primary.opacity(0.1))
                                             .frame(width: 10, height: 10)
@@ -181,41 +189,40 @@ struct ContentView: View {
                                 }
                             }
                             .padding(.horizontal)
-                            
-                            if !aktiveExperimente.aktive.isEmpty {
-                                HStack {
-                                    Circle()
-                                        .fill(Color.green)
-                                        .frame(width: 6, height: 6)
-                                    Text("Aktiv: \(aktivesExperiment)")
-                                        .font(.caption)
-                                        .foregroundColor(.green.opacity(0.9))
-                                    Spacer()
-                                }
-                                .padding(.horizontal)
+
+                            HStack {
+                                Circle()
+                                    .fill(Color.green)
+                                    .frame(width: 6, height: 6)
+                                Text("Aktiv: \(demoModus ? demoExperimentTitel : aktivesExperiment)")
+                                    .font(.caption)
+                                    .foregroundColor(.green.opacity(0.9))
+                                Spacer()
                             }
-                            
+                            .padding(.horizontal)
+                            .opacity(demoModus || !aktiveExperimente.aktive.isEmpty ? 1 : 0)
+
                             Button(action: { zeigeCheckIn = true }) {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(heuteCheckInGemacht ? "Check-in erledigt ✓" : "Täglicher Check-in")
+                                        Text(angezeigterCheckIn ? "Check-in erledigt ✓" : "Täglicher Check-in")
                                             .font(.headline)
-                                            .foregroundColor(heuteCheckInGemacht ? .green : theme.hintergrund)
-                                        Text(heuteCheckInGemacht ? "Morgen wieder!" : aktiveExperimente.aktive.isEmpty ? "Starte zuerst ein Experiment" : "Für: \(aktivesExperiment)")
+                                            .foregroundColor(angezeigterCheckIn ? .green : theme.hintergrund)
+                                        Text(angezeigterCheckIn ? "Morgen wieder!" : aktiveExperimente.aktive.isEmpty ? "Starte zuerst ein Experiment" : "Für: \(aktivesExperiment)")
                                             .font(.caption)
-                                            .foregroundColor(heuteCheckInGemacht ? .green.opacity(0.8) : theme.hintergrund.opacity(0.7))
+                                            .foregroundColor(angezeigterCheckIn ? .green.opacity(0.8) : theme.hintergrund.opacity(0.7))
                                     }
                                     Spacer()
-                                    Image(systemName: heuteCheckInGemacht ? "checkmark.circle.fill" : "moon.fill")
+                                    Image(systemName: angezeigterCheckIn ? "checkmark.circle.fill" : "moon.fill")
                                         .font(.title2)
-                                        .foregroundColor(heuteCheckInGemacht ? .green : theme.hintergrund)
+                                        .foregroundColor(angezeigterCheckIn ? .green : theme.hintergrund)
                                 }
                                 .padding()
-                                .background(heuteCheckInGemacht ? Color.green.opacity(0.15) : cyan)
+                                .background(angezeigterCheckIn ? Color.green.opacity(0.15) : cyan)
                                 .cornerRadius(14)
                             }
                             .padding(.horizontal)
-                            .disabled(heuteCheckInGemacht || aktiveExperimente.aktive.isEmpty)
+                            .disabled(angezeigterCheckIn || (!demoModus && aktiveExperimente.aktive.isEmpty))
                         }
                         .padding(.vertical)
                         .background(theme.karte)
@@ -223,7 +230,47 @@ struct ContentView: View {
                         .padding(.horizontal)
                         
                         // ── Laufendes Experiment ──
-                        if !aktiveExperimente.aktive.isEmpty {
+                        if demoModus {
+                            // Demo-Experimentkarte
+                            VStack(spacing: 10) {
+                                HStack {
+                                    Image(systemName: "cup.and.saucer.fill")
+                                        .foregroundColor(.indigo)
+                                        .frame(width: 30)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(demoExperimentTitel)
+                                            .font(.body)
+                                            .foregroundColor(.primary)
+                                        Text("Tag 8 von 14")
+                                            .font(.caption)
+                                            .foregroundColor(.green.opacity(0.8))
+                                    }
+                                    Spacer()
+                                    Circle()
+                                        .fill(Color.green)
+                                        .frame(width: 8, height: 8)
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.secondary)
+                                        .font(.caption)
+                                }
+                                GeometryReader { geo in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color.green.opacity(0.15))
+                                            .frame(height: 6)
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .fill(Color.green)
+                                            .frame(width: geo.size.width * (8.0 / 14.0), height: 6)
+                                    }
+                                }
+                                .frame(height: 6)
+                            }
+                            .padding()
+                            .background(Color.green.opacity(0.08))
+                            .cornerRadius(14)
+                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.green.opacity(0.2), lineWidth: 1))
+                            .padding(.horizontal)
+                        } else if !aktiveExperimente.aktive.isEmpty {
                             ForEach(aktiveExperimente.aktiveNamen, id: \.self) { titel in
                                 NavigationLink(destination: ExperimentDetailView(
                                     titel: titel,
@@ -254,7 +301,6 @@ struct ContentView: View {
                                                 .foregroundColor(.secondary)
                                                 .font(.caption)
                                         }
-
                                         if let start = aktiveExperimente.startDatum(fuer: titel) {
                                             let tage = min(Calendar.current.dateComponents([.day], from: start, to: Date()).day ?? 0, 13)
                                             let fortschritt = CGFloat(tage + 1) / 14.0
@@ -275,10 +321,7 @@ struct ContentView: View {
                                     .padding()
                                     .background(Color.green.opacity(0.08))
                                     .cornerRadius(14)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .stroke(Color.green.opacity(0.2), lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.green.opacity(0.2), lineWidth: 1))
                                 }
                                 .buttonStyle(PlainButtonStyle())
                                 .padding(.horizontal)
@@ -318,7 +361,7 @@ struct ContentView: View {
                             HStack(spacing: 12) {
                                 DashboardKarte(
                                     titel: "Ausgangswert",
-                                    wert: String(format: "%.1f", baselineSchlaf),
+                                    wert: String(format: "%.1f", effektiverBaselineWert),
                                     einheit: "/10",
                                     icon: "moon.fill",
                                     farbe: .gray
@@ -343,7 +386,7 @@ struct ContentView: View {
                             if demoModus || !speicher.eintraege.isEmpty {
                                 SchlafGraphView(
                                     eintraege: graphEintraege,
-                                    baselineWert: baselineSchlaf
+                                    baselineWert: effektiverBaselineWert
                                 )
                             } else {
                                 HStack {

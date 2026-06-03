@@ -40,9 +40,10 @@ class PunkteManager: ObservableObject {
     }
 
     func sync() {
-        let name = UserDefaults.standard.string(forKey: "nutzername") ?? "Schläfer"
+        let name = UserDefaults.standard.string(forKey: "nutzername") ?? ""
         let streak = UserDefaults.standard.integer(forKey: "letzterStreak")
         let experimente = UserDefaults.standard.integer(forKey: "abgeschlosseneExperimente")
-        FirebaseManager.shared.profilAktualisieren(punkte: punkte, name: name, streak: streak, experimente: experimente)
+        let oeffentlich = UserDefaults.standard.bool(forKey: "oeffentlichInRangliste")
+        FirebaseManager.shared.profilAktualisieren(punkte: punkte, name: name, streak: streak, experimente: experimente, oeffentlich: oeffentlich)
     }
 }

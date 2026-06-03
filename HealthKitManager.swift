@@ -154,45 +154,4 @@ class HealthKitManager: ObservableObject {
         }
     }
 
-    // Letzte N Nächte aus Apple Health importieren
-    func vergangeneNaechteImportieren(anzahl: Int, experimentTitel: String, speicher: CheckInSpeicher, completion: @escaping (Int) -> Void) {
-        let gruppe = DispatchGroup()
-        var importiert = 0
-        
-        for i in 1...anzahl {
-            guard let datum = Calendar.current.date(byAdding: .day, value: -i, to: Date()) else { continue }
-            let zielTag = Calendar.current.startOfDay(for: datum)
-            
-            // Prüfen ob für diesen Tag schon ein Eintrag existiert
-            let existiert = speicher.eintraege.contains {
-                Calendar.current.startOfDay(for: $0.datum) == zielTag
-            }
-            
-            if existiert { continue }
-            
-            gruppe.enter()
-            schlafdatenFuerNacht(datum: datum) { stunden, qualitaet in
-                if stunden > 0 {
-                    let eintrag = CheckInEintrag(
-                        datum: zielTag.addingTimeInterval(8 * 3600), // 8 Uhr morgens
-                        schlafqualitaet: qualitaet,
-                        energie: 5,
-                        stress: 5,
-                        experimentTitel: experimentTitel,
-                        istBaseline: false
-                    )
-                    DispatchQueue.main.async {
-                        speicher.speichern(eintrag: eintrag)
-                        FirebaseManager.shared.checkInSpeichern(eintrag: eintrag)
-                        importiert += 1
-                    }
-                }
-                gruppe.leave()
-            }
-        }
-        
-        gruppe.notify(queue: .main) {
-            completion(importiert)
-        }
-    }
 }

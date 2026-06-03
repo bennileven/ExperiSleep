@@ -3,8 +3,6 @@ import SwiftUI
 struct OnboardingView: View {
     @EnvironmentObject var theme: AppTheme
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
-    @AppStorage("baselineEnergie") var baselineEnergie = 5.0
-    @AppStorage("baselineStress") var baselineStress = 5.0
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     @AppStorage("nutzername") var nutzername = ""
 
@@ -38,7 +36,7 @@ struct OnboardingView: View {
                     .disabled(schritt == 0)
 
                     HStack(spacing: 8) {
-                        ForEach(0..<5) { i in
+                        ForEach(0..<3) { i in
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(i <= schritt ? cyan : Color.primary.opacity(0.15))
                                 .frame(height: 4)
@@ -56,35 +54,7 @@ struct OnboardingView: View {
                 } else if schritt == 1 {
                     BenutzerNameSchritt(nameEingabe: $nameEingabe, cyan: cyan)
                 } else if schritt == 2 {
-                    FrageSchritt(
-                        frage: "Wie ist deine Energie morgens?",
-                        beschreibung: "Wie fit fühlst du dich beim Aufwachen?",
-                        icon: "bolt.fill",
-                        color: .orange,
-                        linksLabel: "Völlig erschöpft",
-                        rechtsLabel: "Topfit",
-                        wert: $baselineEnergie
-                    )
-                } else if schritt == 3 {
-                    FrageSchritt(
-                        frage: "Wie gestresst bist du?",
-                        beschreibung: "Dein allgemeines Stresslevel",
-                        icon: "brain.head.profile",
-                        color: .red,
-                        linksLabel: "Sehr entspannt",
-                        rechtsLabel: "Sehr gestresst",
-                        wert: $baselineStress
-                    )
-                } else if schritt == 4 {
-                    FrageSchritt(
-                        frage: "Wie ist deine Schlafqualität?",
-                        beschreibung: "Wie gut schläfst du aktuell?",
-                        icon: "moon.fill",
-                        color: .indigo,
-                        linksLabel: "Sehr schlecht",
-                        rechtsLabel: "Sehr gut",
-                        wert: $baselineSchlaf
-                    )
+                    SchlafBaselineSchritt(wert: $baselineSchlaf, cyan: cyan)
                 }
                 
                 Spacer()
@@ -95,7 +65,7 @@ struct OnboardingView: View {
                         nutzername = nameEingabe.trimmingCharacters(in: .whitespaces)
                         HapticManager.impact()
                         withAnimation { schritt += 1 }
-                    } else if schritt < 4 {
+                    } else if schritt < 2 {
                         HapticManager.soft()
                         withAnimation { schritt += 1 }
                     } else {
@@ -103,7 +73,7 @@ struct OnboardingView: View {
                         onboardingAbgeschlossen = true
                     }
                 }) {
-                    Text(schritt == 0 ? "Loslegen" : schritt == 4 ? "Fertig" : "Weiter")
+                    Text(schritt == 0 ? "Loslegen" : schritt == 2 ? "Fertig" : "Weiter")
                         .font(.headline)
                         .foregroundColor(weiterDeaktiviert ? .secondary : theme.hintergrund)
                         .frame(maxWidth: .infinity)
@@ -145,7 +115,7 @@ struct WillkommensSchritt: View {
                 .padding(.horizontal)
             
             VStack(alignment: .leading, spacing: 14) {
-                OnboardingInfoRow(icon: "1.circle.fill", text: "Beantworte 4 kurze Fragen zu deinem Schlaf", color: cyan)
+                OnboardingInfoRow(icon: "1.circle.fill", text: "Lege deinen Schlaf-Ausgangswert fest", color: cyan)
                 OnboardingInfoRow(icon: "2.circle.fill", text: "Starte ein Experiment das dich interessiert", color: cyan)
                 OnboardingInfoRow(icon: "3.circle.fill", text: "Mache täglich einen kurzen Check-in", color: cyan)
                 OnboardingInfoRow(icon: "chart.bar.fill", text: "Sieh nach 2 Wochen ob es geholfen hat", color: cyan)
@@ -261,6 +231,170 @@ struct FrageSchritt: View {
             .padding()
             .glassEffect(in: RoundedRectangle(cornerRadius: 14))
             .padding(.horizontal)
+        }
+    }
+}
+
+// MARK: - Schlaf Baseline Schritt
+
+struct SchlafBaselineSchritt: View {
+    @Binding var wert: Double
+    let cyan: Color
+
+    enum Modus { case manuell, healthKit }
+    @State private var modus: Modus = .manuell
+    @State private var laedt = false
+    @State private var geladen = false
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "moon.fill")
+                .font(.system(size: 50))
+                .foregroundColor(.indigo)
+
+            VStack(spacing: 8) {
+                Text("Wie ist deine Schlafqualität?")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.center)
+                Text("Wähle wie du deinen Ausgangswert festlegen möchtest")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal)
+
+            // Auswahl-Karten
+            HStack(spacing: 12) {
+                ModusKarte(
+                    icon: "slider.horizontal.3",
+                    titel: "Manuell",
+                    beschreibung: "Selbst einschätzen",
+                    farbe: .indigo,
+                    ausgewaehlt: modus == .manuell
+                ) { modus = .manuell }
+
+                ModusKarte(
+                    icon: "heart.fill",
+                    titel: "Apple Health",
+                    beschreibung: "Letzte 14 Nächte",
+                    farbe: .red,
+                    ausgewaehlt: modus == .healthKit
+                ) { modus = .healthKit }
+            }
+            .padding(.horizontal)
+
+            // Inhalt je nach Modus
+            if modus == .manuell {
+                VStack(spacing: 8) {
+                    Text("\(Int(wert))")
+                        .font(.system(size: 80, weight: .bold))
+                        .foregroundColor(.indigo)
+
+                    VStack(spacing: 8) {
+                        Slider(value: $wert, in: 1...10, step: 1)
+                            .tint(.indigo)
+                            .padding(.horizontal)
+                        HStack {
+                            Text("Sehr schlecht")
+                                .font(.caption).foregroundColor(.secondary)
+                            Spacer()
+                            Text("Sehr gut")
+                                .font(.caption).foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal)
+                    }
+                    .padding()
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                    .padding(.horizontal)
+                }
+            } else {
+                VStack(spacing: 16) {
+                    if geladen {
+                        VStack(spacing: 6) {
+                            Text("\(String(format: "%.1f", wert))")
+                                .font(.system(size: 80, weight: .bold))
+                                .foregroundColor(.indigo)
+                            Text("Ø der letzten 14 Nächte")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Button(action: laden) {
+                            HStack(spacing: 10) {
+                                if laedt {
+                                    ProgressView().tint(.white)
+                                } else {
+                                    Image(systemName: "heart.fill").foregroundColor(.white)
+                                }
+                                Text(laedt ? "Wird geladen…" : "Aus Apple Health laden")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.red.opacity(laedt ? 0.5 : 1))
+                            .cornerRadius(14)
+                        }
+                        .padding(.horizontal)
+                        .disabled(laedt)
+
+                        Text("ExperiSleep liest nur deine Schlafdauer und -phasen — keine anderen Gesundheitsdaten.")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                }
+            }
+        }
+    }
+
+    private func laden() {
+        laedt = true
+        HealthKitManager.shared.berechtigungAnfragen { _ in
+            HealthKitManager.shared.schlafdurchschnittLetzteNaechte(anzahl: 14) { durchschnitt in
+                laedt = false
+                if let wert = durchschnitt {
+                    self.wert = wert
+                    geladen = true
+                }
+            }
+        }
+    }
+}
+
+struct ModusKarte: View {
+    let icon: String
+    let titel: String
+    let beschreibung: String
+    let farbe: Color
+    let ausgewaehlt: Bool
+    let aktion: () -> Void
+
+    var body: some View {
+        Button(action: aktion) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                    .foregroundColor(ausgewaehlt ? farbe : .secondary)
+                Text(titel)
+                    .font(.subheadline).bold()
+                    .foregroundColor(ausgewaehlt ? .primary : .secondary)
+                Text(beschreibung)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(ausgewaehlt ? farbe.opacity(0.12) : Color.primary.opacity(0.04))
+            .cornerRadius(14)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(ausgewaehlt ? farbe.opacity(0.5) : Color.primary.opacity(0.08), lineWidth: 1.5)
+            )
         }
     }
 }

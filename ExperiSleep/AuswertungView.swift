@@ -4,40 +4,82 @@ struct AuswertungView: View {
     var experimentTitel: String
     @EnvironmentObject private var speicher: CheckInSpeicher
     @EnvironmentObject var theme: AppTheme
-    
+
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     @AppStorage("baselineEnergie") var baselineEnergie = 5.0
     @AppStorage("baselineStress") var baselineStress = 5.0
-    
-    var baselineAvgSchlaf: Double { speicher.durchschnittSchlaf(experiment: experimentTitel, baseline: true) }
-    var experimentAvgSchlaf: Double { speicher.durchschnittSchlaf(experiment: experimentTitel, baseline: false) }
-    
+    @AppStorage("demoModus") var demoModus = false
+
+    // Im Demo-Modus immer "Kein Koffein nach 14 Uhr" für vollständige wissenschaftliche Analyse
+    var analyseTitel: String {
+        demoModus ? "Kein Koffein nach 14 Uhr" : experimentTitel
+    }
+
+    var effektiverBaselineWert: Double {
+        demoModus ? 5.0 : baselineSchlaf
+    }
+
+    func demoEintraege() -> [CheckInEintrag] {
+        let schlafBaseline = [4, 3, 6, 7, 7, 8, 8]
+        let schlafExp      = [7, 8, 8, 9, 9, 8, 9]
+        let energieBaseline = [5, 4, 5, 5, 4, 5, 5]
+        let energieExp      = [7, 7, 8, 7, 8, 8, 9]
+        let stressBaseline  = [6, 7, 6, 7, 6, 6, 6]
+        let stressExp       = [4, 3, 4, 3, 3, 2, 3]
+        guard let basis = Calendar.current.date(byAdding: .day, value: -13, to: Date()) else { return [] }
+        var result: [CheckInEintrag] = []
+        for i in 0..<7 {
+            guard let d = Calendar.current.date(byAdding: .day, value: i, to: basis) else { continue }
+            result.append(CheckInEintrag(datum: d.addingTimeInterval(8*3600), schlafqualitaet: schlafBaseline[i], energie: energieBaseline[i], stress: stressBaseline[i], experimentTitel: analyseTitel, istBaseline: true))
+        }
+        for i in 0..<7 {
+            guard let d = Calendar.current.date(byAdding: .day, value: i + 7, to: basis) else { continue }
+            result.append(CheckInEintrag(datum: d.addingTimeInterval(8*3600), schlafqualitaet: schlafExp[i], energie: energieExp[i], stress: stressExp[i], experimentTitel: analyseTitel, istBaseline: false))
+        }
+        return result
+    }
+
+    var aktuelleEintraege: [CheckInEintrag] {
+        demoModus ? demoEintraege() : speicher.eintraegeFor(experiment: experimentTitel)
+    }
+
+    var baselineAvgSchlaf: Double {
+        let b = aktuelleEintraege.filter { $0.istBaseline }
+        guard !b.isEmpty else { return 0 }
+        return Double(b.reduce(0) { $0 + $1.schlafqualitaet }) / Double(b.count)
+    }
+
+    var experimentAvgSchlaf: Double {
+        let e = aktuelleEintraege.filter { !$0.istBaseline }
+        guard !e.isEmpty else { return 0 }
+        return Double(e.reduce(0) { $0 + $1.schlafqualitaet }) / Double(e.count)
+    }
+
     var verbesserungGegenOnboarding: Double {
         guard experimentAvgSchlaf > 0 else { return 0 }
-        return experimentAvgSchlaf - baselineSchlaf
+        return experimentAvgSchlaf - effektiverBaselineWert
     }
-    
+
     var verbesserungGegenBaseline: Double {
         guard baselineAvgSchlaf > 0 && experimentAvgSchlaf > 0 else { return 0 }
         return experimentAvgSchlaf - baselineAvgSchlaf
     }
 
     var tageSeitStart: Int {
-        guard let erster = speicher.eintraegeFor(experiment: experimentTitel).map({ $0.datum }).min() else { return 0 }
+        if demoModus { return 14 }
+        guard let erster = aktuelleEintraege.map({ $0.datum }).min() else { return 0 }
         return Calendar.current.dateComponents([.day], from: erster, to: Date()).day ?? 0
     }
 
     var hatGenugDaten: Bool {
-        speicher.eintraegeFor(experiment: experimentTitel).count >= 7
+        demoModus ? true : aktuelleEintraege.count >= 7
     }
 
     var experimentHatGeholfen: Bool {
         verbesserungGegenOnboarding > 0
     }
-    
+
     var body: some View {
-        let _ = print("Suche nach: '\(experimentTitel)' — Gefunden: \(speicher.eintraege.count) Einträge total, \(speicher.eintraegeFor(experiment: experimentTitel).count) für dieses Experiment")
-        let _ = print("Alle Einträge: \(speicher.eintraege.map { $0.experimentTitel })")
         
         ZStack {
             theme.hintergrund
@@ -57,29 +99,29 @@ struct AuswertungView: View {
                             .bold()
                             .foregroundColor(.primary)
                         
-                        Text(experimentTitel)
+                        Text(analyseTitel)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
                     .padding(.top, 20)
-                    
+
                     // Schlaf Graph
                     SchlafGraphView(
-                        eintraege: speicher.eintraegeFor(experiment: experimentTitel),
-                        baselineWert: baselineSchlaf
+                        eintraege: aktuelleEintraege,
+                        baselineWert: effektiverBaselineWert
                     )
-                    
+
                     // Vergleich mit Ausgangswert
                     VStack(spacing: 16) {
                         Text("Vergleich mit deinem Ausgangswert")
                             .font(.headline)
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        
+
                         HStack(spacing: 12) {
                             VergleichsKarte(
                                 label: "Dein Start",
-                                wert: baselineSchlaf,
+                                wert: effektiverBaselineWert,
                                 farbe: .gray,
                                 beschreibung: "Vor ExperiSleep"
                             )
@@ -111,7 +153,7 @@ struct AuswertungView: View {
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        BalkenRow(label: "Dein Ausgangswert", wert: baselineSchlaf, farbe: .gray.opacity(0.6))
+                        BalkenRow(label: "Dein Ausgangswert", wert: effektiverBaselineWert, farbe: .gray.opacity(0.6))
                         BalkenRow(label: "Woche 1 (Normal)", wert: baselineAvgSchlaf, farbe: .gray)
                         BalkenRow(label: "Woche 2 (Experiment)", wert: experimentAvgSchlaf, farbe: .indigo)
                     }
@@ -140,12 +182,12 @@ struct AuswertungView: View {
                     // Statistiken
                     HStack(spacing: 12) {
                         StatKarte(
-                            zahl: "\(speicher.eintraegeFor(experiment: experimentTitel).filter { $0.istBaseline }.count)",
+                            zahl: "\(aktuelleEintraege.filter { $0.istBaseline }.count)",
                             label: "Baseline\nEinträge",
                             farbe: .gray
                         )
                         StatKarte(
-                            zahl: "\(speicher.eintraegeFor(experiment: experimentTitel).filter { !$0.istBaseline }.count)",
+                            zahl: "\(aktuelleEintraege.filter { !$0.istBaseline }.count)",
                             label: "Experiment\nEinträge",
                             farbe: .indigo
                         )
@@ -155,7 +197,7 @@ struct AuswertungView: View {
                     // Wissenschaftliche Analyse
                     if hatGenugDaten {
                         WissenschaftlicheAnalyseView(
-                            titel: experimentTitel,
+                            titel: analyseTitel,
                             hatGeholfen: experimentHatGeholfen,
                             tageSeitStart: tageSeitStart
                         )

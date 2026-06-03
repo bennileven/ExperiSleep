@@ -8,12 +8,9 @@ struct ExperimentDetailView: View {
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @EnvironmentObject private var speicher: CheckInSpeicher
     @EnvironmentObject var theme: AppTheme
-    @State private var importiert = false
-    @State private var importiertAnzahl = 0
     @State private var zeigeKonfliktAlert = false
     @State private var baselineGeladen = false
     @State private var healthKitLaedt = false
-    @AppStorage("demoModus") var demoAktiv = false
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
     
     var istAktiv: Bool {
@@ -44,10 +41,6 @@ struct ExperimentDetailView: View {
                             baselineAusHealthKitButton
                         }
                         startenStoppenButton
-                        if istAktiv {
-                            healthImportButton
-                            demoModusButton
-                        }
                         auswertungButton
                     }
                 }
@@ -183,68 +176,6 @@ struct ExperimentDetailView: View {
         .disabled(baselineGeladen || healthKitLaedt)
     }
 
-    var healthImportButton: some View {
-        Button(action: {
-            HealthKitManager.shared.vergangeneNaechteImportieren(
-                anzahl: 4,
-                experimentTitel: titel,
-                speicher: speicher
-            ) { anzahl in
-                importiertAnzahl = anzahl
-                importiert = true
-            }
-        }) {
-            HStack {
-                Image(systemName: importiert ? "checkmark.circle.fill" : "heart.fill")
-                    .foregroundColor(importiert ? .green : .red)
-                Text(importiert ? "\(importiertAnzahl) Nächte importiert ✓" : "Schlafdaten der letzten 4 Nächte importieren")
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(importiert ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
-            .cornerRadius(14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(importiert ? Color.green.opacity(0.3) : Color.red.opacity(0.3), lineWidth: 1)
-            )
-        }
-        .padding(.horizontal)
-        .disabled(importiert)
-    }
-    
-    var demoModusButton: some View {
-        Button(action: { demoAktiv.toggle() }) {
-            HStack {
-                Image(systemName: demoAktiv ? "eye.slash.fill" : "wand.and.stars")
-                    .foregroundColor(.purple)
-                Text(demoAktiv ? "Demo Modus deaktivieren" : "Demo Modus aktivieren")
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
-                Spacer()
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(demoAktiv ? Color.purple : Color.primary.opacity(0.15))
-                        .frame(width: 44, height: 26)
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 20, height: 20)
-                        .offset(x: demoAktiv ? 9 : -9)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.purple.opacity(0.15))
-            .cornerRadius(14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.purple.opacity(demoAktiv ? 0.6 : 0.3), lineWidth: 1)
-            )
-        }
-        .padding(.horizontal)
-    }
-    
     var auswertungButton: some View {
         NavigationLink(destination: AuswertungView(
             experimentTitel: titel

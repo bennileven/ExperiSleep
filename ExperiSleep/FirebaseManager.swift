@@ -5,43 +5,73 @@ import FirebaseFirestore
 
 class FirebaseManager: ObservableObject {
     static let shared = FirebaseManager()
-    
+
     @Published var nutzerID: String = ""
+    @Published var istAngemeldet: Bool = false
+
     private let db = Firestore.firestore()
     private var warteschlange: [CheckInEintrag] = []
-    
+
     init() {
-        anmelden()
-    }
-    
-    func anmelden() {
-        Auth.auth().signInAnonymously { result, error in
-            if let error = error {
-                print("❌ Login Fehler: \(error)")
-                return
+        Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            guard let self = self else { return }
+            let eingeloggt = user != nil && user?.isAnonymous == false
+            DispatchQueue.main.async {
+                self.nutzerID = eingeloggt ? (user?.uid ?? "") : ""
+                self.istAngemeldet = eingeloggt
+                if eingeloggt {
+                    for eintrag in self.warteschlange {
+                        self.checkInSpeichernDirekt(eintrag: eintrag)
+                    }
+                    self.warteschlange.removeAll()
+                }
             }
-            self.nutzerID = result?.user.uid ?? ""
-            print("✅ Angemeldet als: \(self.nutzerID)")
-            
-            // Warteschlange abarbeiten
-            for eintrag in self.warteschlange {
-                self.checkInSpeichernDirekt(eintrag: eintrag)
-            }
-            self.warteschlange.removeAll()
         }
     }
-    
+
+    // MARK: - Auth
+
+    func registrieren(email: String, passwort: String, completion: @escaping (String?) -> Void) {
+        Auth.auth().createUser(withEmail: email, password: passwort) { _, error in
+            DispatchQueue.main.async {
+                completion(error.map { self.fehlermeldung($0) })
+            }
+        }
+    }
+
+    func einloggen(email: String, passwort: String, completion: @escaping (String?) -> Void) {
+        Auth.auth().signIn(withEmail: email, password: passwort) { _, error in
+            DispatchQueue.main.async {
+                completion(error.map { self.fehlermeldung($0) })
+            }
+        }
+    }
+
+    func abmelden() {
+        try? Auth.auth().signOut()
+    }
+
+    private func fehlermeldung(_ error: Error) -> String {
+        switch AuthErrorCode(rawValue: (error as NSError).code) {
+        case .emailAlreadyInUse:  return "Diese E-Mail ist bereits registriert."
+        case .invalidEmail:       return "Ungültige E-Mail-Adresse."
+        case .weakPassword:       return "Passwort zu schwach (mind. 6 Zeichen)."
+        case .wrongPassword:      return "Falsches Passwort."
+        case .userNotFound:       return "Kein Konto mit dieser E-Mail gefunden."
+        default:                  return "Fehler: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Daten
+
     func checkInSpeichern(eintrag: CheckInEintrag) {
-        print("🔄 Versuche zu speichern... NutzerID: \(nutzerID)")
-        
         if nutzerID.isEmpty {
-            print("⏳ Noch nicht angemeldet — in Warteschlange")
             warteschlange.append(eintrag)
         } else {
             checkInSpeichernDirekt(eintrag: eintrag)
         }
     }
-    
+
     private func checkInSpeichernDirekt(eintrag: CheckInEintrag) {
         let data: [String: Any] = [
             "datum": eintrag.datum,
@@ -52,26 +82,22 @@ class FirebaseManager: ObservableObject {
             "istBaseline": eintrag.istBaseline,
             "nutzerID": nutzerID
         ]
-        
         db.collection("checkins")
             .document(eintrag.id.uuidString)
             .setData(data) { error in
-                if let error = error {
-                    print("❌ Fehler beim Speichern: \(error)")
-                } else {
-                    print("✅ CheckIn erfolgreich in Firebase gespeichert!")
-                }
+                if let error = error { print("❌ \(error)") }
             }
     }
-    
-    func profilAktualisieren(punkte: Int, name: String, streak: Int, experimente: Int) {
+
+    func profilAktualisieren(punkte: Int, name: String, streak: Int, experimente: Int, oeffentlich: Bool) {
         guard !nutzerID.isEmpty else { return }
         let data: [String: Any] = [
-            "anzeigeName": name.isEmpty ? "Schläfer" : name,
+            "anzeigeName": name.isEmpty ? "Anonymer Nutzer" : name,
             "punkte": punkte,
             "streak": streak,
             "experimente": experimente,
-            "zuletzt": Date()
+            "zuletzt": Date(),
+            "oeffentlich": oeffentlich
         ]
         db.collection("nutzer_profile").document(nutzerID).setData(data, merge: true)
     }
@@ -80,13 +106,14 @@ class FirebaseManager: ObservableObject {
         db.collection("nutzer_profile")
             .order(by: "punkte", descending: true)
             .limit(to: 50)
-            .getDocuments { snapshot, error in
+            .getDocuments { snapshot, _ in
                 guard let docs = snapshot?.documents else { completion([]); return }
                 let eintraege = docs.compactMap { doc -> RanglisteEintrag? in
                     let data = doc.data()
+                    guard data["oeffentlich"] as? Bool == true else { return nil }
                     return RanglisteEintrag(
                         id: doc.documentID,
-                        anzeigeName: data["anzeigeName"] as? String ?? "Schläfer",
+                        anzeigeName: data["anzeigeName"] as? String ?? "Anonymer Nutzer",
                         punkte: data["punkte"] as? Int ?? 0,
                         streak: data["streak"] as? Int ?? 0,
                         experimente: data["experimente"] as? Int ?? 0
@@ -104,4 +131,3 @@ struct RanglisteEintrag: Identifiable {
     var streak: Int
     var experimente: Int
 }
-

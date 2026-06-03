@@ -12,26 +12,31 @@ struct ProfilView: View {
     @EnvironmentObject var theme: AppTheme
     @EnvironmentObject private var aktiveExperimente: AktiveExperimente
     @AppStorage("baselineSchlaf") var baselineSchlaf = 5.0
-    @AppStorage("baselineEnergie") var baselineEnergie = 5.0
-    @AppStorage("baselineStress") var baselineStress = 5.0
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = true
     @AppStorage("nutzername") var nutzername = "Mein Profil"
     @AppStorage("mitteilungenAktiv") var mitteilungenAktiv = true
+    @AppStorage("demoModus") var demoModus = false
     @State private var zeigeNameBearbeiten = false
     @State private var neuerName = ""
     
     let cyan = Color(red: 0.0, green: 0.90, blue: 0.80)
     
-    var gesamtCheckIns: Int { speicher.eintraege.count }
-    
-    var gesamtExperimente: Int { aktiveExperimente.aktive.count }
-    
+    var gesamtCheckIns: Int {
+        demoModus ? 14 : speicher.eintraege.count
+    }
+
+    var gesamtExperimente: Int {
+        demoModus ? 1 : aktiveExperimente.vergangene.count + aktiveExperimente.aktive.count
+    }
+
     var durchschnittSchlaf: Double {
+        if demoModus { return 7.7 }
         guard !speicher.eintraege.isEmpty else { return 0 }
         return Double(speicher.eintraege.reduce(0) { $0 + $1.schlafqualitaet }) / Double(speicher.eintraege.count)
     }
-    
+
     var verbesserung: Double {
+        if demoModus { return 3.0 }
         guard durchschnittSchlaf > 0 else { return 0 }
         return durchschnittSchlaf - baselineSchlaf
     }
@@ -95,7 +100,7 @@ struct ProfilView: View {
                             )
                             ProfilKarte(
                                 titel: "XP Punkte",
-                                wert: "\(PunkteManager.shared.punkte)",
+                                wert: demoModus ? "240" : "\(PunkteManager.shared.punkte)",
                                 icon: "trophy.fill",
                                 farbe: .yellow
                             )
@@ -160,30 +165,12 @@ struct ProfilView: View {
                             .font(.headline)
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        
+
                         ProfilSlider(
                             titel: "Schlafqualität",
                             icon: "moon.fill",
                             farbe: .indigo,
                             wert: $baselineSchlaf
-                        )
-                        
-                        Divider().background(Color.primary.opacity(0.1))
-                        
-                        ProfilSlider(
-                            titel: "Energie morgens",
-                            icon: "bolt.fill",
-                            farbe: .orange,
-                            wert: $baselineEnergie
-                        )
-                        
-                        Divider().background(Color.primary.opacity(0.1))
-                        
-                        ProfilSlider(
-                            titel: "Stresslevel",
-                            icon: "brain.head.profile",
-                            farbe: .red,
-                            wert: $baselineStress
                         )
                     }
                     .padding()
@@ -226,6 +213,26 @@ struct ProfilView: View {
                     
                     // ── Einstellungen ──
                     VStack(spacing: 12) {
+                        Toggle(isOn: $demoModus) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "wand.and.stars")
+                                    .foregroundColor(.purple)
+                                    .frame(width: 20)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Demo Modus")
+                                        .font(.subheadline)
+                                        .foregroundColor(.primary)
+                                    Text("Zeigt Beispieldaten für Präsentationen")
+                                        .font(.caption2)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                        .tint(.purple)
+                        .padding()
+                        .background(theme.karte)
+                        .cornerRadius(14)
+
                         Toggle(isOn: $theme.istHell) {
                             HStack(spacing: 12) {
                                 Image(systemName: theme.istHell ? "sun.max.fill" : "moon.fill")
@@ -298,6 +305,24 @@ struct ProfilView: View {
                         }
                         .padding(.horizontal)
                         
+                        Button(action: {
+                            onboardingAbgeschlossen = false
+                            FirebaseManager.shared.abmelden()
+                        }) {
+                            HStack {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    .foregroundColor(.orange)
+                                Text("Abmelden")
+                                    .font(.subheadline)
+                                    .foregroundColor(.primary)
+                                Spacer()
+                            }
+                            .padding()
+                            .background(theme.karte)
+                            .cornerRadius(14)
+                        }
+                        .padding(.horizontal)
+
                         Button(action: {
                             speicher.loeschen { _ in true }
                         }) {

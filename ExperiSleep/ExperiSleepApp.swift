@@ -37,6 +37,7 @@ struct ExperiSleepApp: App {
 struct RootView: View {
     @Binding var splashFertig: Bool
     @AppStorage("onboardingAbgeschlossen") var onboardingAbgeschlossen = false
+    @ObservedObject private var firebase = FirebaseManager.shared
     @EnvironmentObject var theme: AppTheme
     @EnvironmentObject var aktiveExperimente: AktiveExperimente
     @EnvironmentObject var speicher: CheckInSpeicher
@@ -45,10 +46,12 @@ struct RootView: View {
         Group {
             if !splashFertig {
                 SplashView(onFinished: { splashFertig = true })
-            } else if onboardingAbgeschlossen {
-                ContentView()
-            } else {
+            } else if !firebase.istAngemeldet {
+                AnmeldenView()
+            } else if !onboardingAbgeschlossen {
                 OnboardingView()
+            } else {
+                ContentView()
             }
         }
         .preferredColorScheme(theme.schema)
